@@ -1,876 +1,350 @@
-class QuizApp {
-    constructor() {
-        this.questions = [];
-        this.currentQuestion = 0;
-        this.score = 0;
-        this.showResult = false;
-        this.selectedAnswer = null;
-        this.answerSubmitted = false;
-        this.timeElapsed = 0;
-        this.answers = [];
-        this.isFileLoaded = false;
-        this.error = null;
-        this.allQuestions = [];
-        this.selectedQuestionCount = null;
-        this.selectedSubjects = [];
-        this.availableSubjects = [];
-        this.showSubjectSelection = false;
-        this.timer = null;
-        
-        this.init();
-    }
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App - Versione Completa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    async init() {
-        try {
-            const quizData = await this.getQuizData();
-            this.allQuestions = this.parseQuizData(quizData);
-            const subjects = [...new Set(this.allQuestions.map(q => q.materia).filter(Boolean))];
-            this.availableSubjects = subjects;
-            this.showSubjectSelection = subjects.length > 0;
-            this.isFileLoaded = true;
-            this.render();
-        } catch (err) {
-            this.error = `Errore nel caricamento del file domande.csv: ${err.message}`;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #475569;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+
+        .my-4 {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .list-disc {
+            list-style-type: disc;
+        }
+
+        .p-4 {
+            padding: 1rem;
+        }
+
+        .border {
+            border-width: 1px;
+        }
+
+        .border-gray-300 {
+            border-color: #d1d5db;
+        }
+
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .bg-gray-100 {
+            background-color: #f3f4f6;
+        }
+
+        .hover\:bg-gray-200:hover {
+            background-color: #e5e7eb;
+        }
+
+        .text-green-600 {
+            color: #16a34a;
+        }
+
+        .text-red-600 {
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+    class QuizApp {
+        constructor() {
             this.isFileLoaded = false;
+            this.questions = [];
+            this.currentQuestion = 0;
+            this.showSubjectSelection = false;
+            this.selectedSubject = null;
+            this.showResult = false;
+            this.correctAnswers = 0;
+            this.incorrectAnswers = 0;
+            this.quizData = {};
+
             this.render();
         }
-    }
 
-    async getQuizData() {
-        const response = await fetch('domande.csv');
-        if (!response.ok) {
-            throw new Error(`Impossibile caricare il file. Stato: ${response.status}`);
-        }
-        return await response.text();
-    }
-
-    parseQuizData(text) {
-        try {
-            const rows = text.split('\n').filter(row => row.trim() !== '' && !row.trim().startsWith('Materia'));
-            
-            if (rows.length === 0) {
-                throw new Error("Il file non contiene domande valide.");
-            }
-
-            const parsedQuestions = rows.map(row => {
-                const columns = row.split(',');
-                if (columns.length < 8) {
-                    throw new Error(`Formato non valido: la riga "${row}" non ha il numero corretto di colonne (8).`);
+        handleFileUpload(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    this.quizData = JSON.parse(e.target.result);
+                    this.isFileLoaded = true;
+                    this.showSubjectSelection = true;
+                    this.render();
+                } catch (error) {
+                    alert('Errore nel caricamento del file. Assicurati che sia un file JSON valido.');
                 }
-                const [materia, iddomanda, question, ...options] = columns;
-                const correctAnswer = options.pop();
-                const validOptions = options.map(opt => opt.trim()).filter(opt => opt !== '');
-                return {
-                    materia: materia.trim(),
-                    iddomanda: iddomanda.trim(),
-                    question: question.trim(),
-                    options: validOptions,
-                    correctAnswer: correctAnswer.trim()
-                };
-            });
-
-            return parsedQuestions;
-        } catch (err) {
-            throw new Error(`Errore nel parsing dei dati: ${err.message}`);
+            };
+            reader.readAsText(file);
         }
-    }
 
-    shuffleArray(array) {
-        const newArray = [...array];
-        for (let i = newArray.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-        }
-        return newArray;
-    }
-
-    formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-    }
-
-    startTimer() {
-        this.stopTimer();
-        this.timer = setInterval(() => {
-            this.timeElapsed++;
-            this.updateTimer();
-        }, 1000);
-    }
-
-    stopTimer() {
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-    }
-
-    updateTimer() {
-        const timerElement = document.getElementById('timer');
-        if (timerElement) {
-            timerElement.textContent = this.formatTime(this.timeElapsed);
-        }
-    }
-    
-    handleStartQuiz() {
-        let filteredQuestions = this.allQuestions;
-        if (this.availableSubjects.length > 0 && this.selectedSubjects.length > 0) {
-            filteredQuestions = this.allQuestions.filter(q => 
-                this.selectedSubjects.includes(q.materia) || (!q.materia && this.selectedSubjects.includes('Generale'))
-            );
-        }
-        
-        if (!this.selectedQuestionCount || this.selectedQuestionCount > filteredQuestions.length) {
-            this.error = "Seleziona un numero valido di domande per le materie scelte.";
+        handleSubjectSelection(subject) {
+            this.selectedSubject = subject;
+            this.questions = this.quizData[subject].questions;
+            this.showSubjectSelection = false;
             this.render();
-            return;
         }
-        
-        const shuffledQuestions = this.shuffleArray([...filteredQuestions]);
-        const selectedQuestions = shuffledQuestions.slice(0, this.selectedQuestionCount);
-        
-        this.questions = selectedQuestions;
-        this.error = null;
-        this.resetQuiz();
-        this.startTimer();
-        this.render();
-    }
 
-    resetQuiz() {
-        this.currentQuestion = 0;
-        this.score = 0;
-        this.showResult = false;
-        this.selectedAnswer = null;
-        this.answerSubmitted = false;
-        this.timeElapsed = 0;
-        this.answers = [];
-        this.stopTimer();
-    }
-
-    handleRepeatWithDifferentSubjects() {
-        this.questions = [];
-        this.currentQuestion = 0;
-        this.score = 0;
-        this.showResult = false;
-        this.selectedAnswer = null;
-        this.answerSubmitted = false;
-        this.timeElapsed = 0;
-        this.answers = [];
-        this.selectedQuestionCount = null;
-        this.selectedSubjects = [];
-        this.error = null;
-        this.showSubjectSelection = this.availableSubjects.length > 0;
-        this.stopTimer();
-        this.render();
-    }
-
-    handleSubjectToggle(subject) {
-        if (this.selectedSubjects.includes(subject)) {
-            this.selectedSubjects = this.selectedSubjects.filter(s => s !== subject);
-        } else {
-            this.selectedSubjects.push(subject);
-        }
-        this.render();
-    }
-
-    handleSelectAllSubjects() {
-        if (this.selectedSubjects.length === this.availableSubjects.length) {
-            this.selectedSubjects = [];
-        } else {
-            this.selectedSubjects = [...this.availableSubjects];
-        }
-        this.render();
-    }
-
-    handleConfirmSubjects() {
-        if (this.selectedSubjects.length === 0) {
-            this.error = "Seleziona almeno una materia.";
+        handleNext() {
+            if (this.currentQuestion < this.questions.length - 1) {
+                this.currentQuestion++;
+            } else {
+                this.showResult = true;
+            }
             this.render();
-            return;
         }
-        this.showSubjectSelection = false;
-        this.error = null;
-        this.render();
-    }
 
-    handleAnswerSubmit(selectedOption) {
-        if (!this.questions[this.currentQuestion]) return;
-        
-        this.selectedAnswer = selectedOption;
-        this.answerSubmitted = true;
-        
-        const isCorrect = selectedOption === this.questions[this.currentQuestion].correctAnswer;
-        const newAnswers = [...this.answers];
-        newAnswers[this.currentQuestion] = { 
-            materia: this.questions[this.currentQuestion].materia,
-            iddomanda: this.questions[this.currentQuestion].iddomanda,
-            question: this.questions[this.currentQuestion].question,
-            selectedAnswer: selectedOption,
-            correctAnswer: this.questions[this.currentQuestion].correctAnswer,
-            isCorrect
-        };
-        this.answers = newAnswers;
-        
-        if (isCorrect) {
-            this.score++;
-        }
-        
-        this.render();
-    }
-
-    handleNext() {
-        if (this.currentQuestion < this.questions.length - 1) {
-            this.currentQuestion++;
-            this.selectedAnswer = null;
-            this.answerSubmitted = false;
-        } else {
-            this.showResult = true;
-            this.stopTimer();
-        }
-        this.render();
-    }
-
-    renderSubjectSelection() {
-        const simulationBustaSubjects = this.availableSubjects.filter(subject => 
-            subject.toUpperCase().includes('SIMULAZIONE BUSTA')
-        ).sort();
-        const simulationAltreSubjects = this.availableSubjects.filter(subject => 
-            subject.toUpperCase().includes('SIMULAZIONE ALTRE')
-        ).sort();
-        const otherTestsSubjects = this.availableSubjects.filter(subject => 
-            subject.toUpperCase().startsWith('ALTRI TEST')
-        ).sort();
-        const testSingoleMaterieSubjects = this.availableSubjects.filter(subject => 
-            !subject.toUpperCase().includes('SIMULAZIONE BUSTA') &&
-            !subject.toUpperCase().includes('SIMULAZIONE ALTRE') &&
-            !subject.toUpperCase().startsWith('ALTRI TEST')
-        ).sort();
-
-        const renderSubjectCards = (subjects) => {
-            return subjects.map(subject => {
-                const subjectQuestions = this.allQuestions.filter(q => q.materia === subject);
-                return `
-                    <div
-                        class="subject-card ${this.selectedSubjects.includes(subject) ? 'selected' : ''}"
-                        onclick="app.handleSubjectToggle('${subject}')"
-                    >
-                        <div class="font-semibold text-gray-800 mb-1">
-                            ${subject}
-                        </div>
-                        <div class="text-sm text-gray-600">
-                            ${subjectQuestions.length} domande
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        };
-
-        return `
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title" style="color: #1e40af;">MCB TEST APP - V5.2</h2>
-                </div>
-                <div class="card-content">
-                    <div class="space-y-8">
-                        <div class="text-center">
-                            <div class="text-xl mb-2">
-                                Materie disponibili: <span class="font-semibold text-blue-600">${this.availableSubjects.length}</span>
-                            </div>
-                            <div class="text-gray-600">
-                                Scegli le materie da includere nel Quiz poi premi il pulsante in fondo alla pagina per procedere.
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-6">
-                            <div class="text-center">
-                                <button 
-                                    class="btn ${this.selectedSubjects.length === this.availableSubjects.length ? 'btn-primary' : 'btn-outline'}"
-                                    onclick="app.handleSelectAllSubjects()"
-                                >
-                                    ${this.selectedSubjects.length === this.availableSubjects.length ? 'Deseleziona Tutte' : 'Seleziona Tutte'}
-                                </button>
-                            </div>
-                            
-                            ${simulationBustaSubjects.length > 0 ? `
-                                <h3 class="text-lg font-semibold text-blu-700">Simulazione Busta</h3>
-                                <div class="grid grid-cols-2 gap-4">
-                                    ${renderSubjectCards(simulationBustaSubjects)}
-                                </div>
-                                <hr class="my-4 border-t-2 border-gray-200">
-                            ` : ''}
-                            
-                            ${simulationAltreSubjects.length > 0 ? `
-                                <h3 class="text-lg font-semibold text-orange-700">Simulazione Altre</h3>
-                                <div class="grid grid-cols-2 gap-4">
-                                    ${renderSubjectCards(simulationAltreSubjects)}
-                                </div>
-                                <hr class="my-4 border-t-2 border-gray-200">
-                            ` : ''}
-
-                            ${testSingoleMaterieSubjects.length > 0 ? `
-                                <h3 class="text-lg font-semibold text-purple-700">Test Singole Materie Nostra Classe</h3>
-                                <div class="grid grid-cols-2 gap-4">
-                                    ${renderSubjectCards(testSingoleMaterieSubjects)}
-                                </div>
-                                <hr class="my-4 border-t-2 border-gray-200">
-                            ` : ''}
-
-                            ${otherTestsSubjects.length > 0 ? `
-                                <h3 class="text-lg font-semibold text-orange-700">Altri Test</h3>
-                                <div class="grid grid-cols-2 gap-4">
-                                    ${renderSubjectCards(otherTestsSubjects)}
-                                </div>
-                            ` : ''}
-
-                        </div>
-
-                        ${this.selectedSubjects.length > 0 ? `
-                            <div class="p-4 bg-blue-50 rounded-lg border">
-                                <div class="text-blue-700 font-medium">
-                                    Materie selezionate: ${this.selectedSubjects.length}
-                                </div>
-                                <div class="text-blue-600">
-                                    Domande totali per queste materie: ${this.allQuestions.filter(q => 
-                                        this.selectedSubjects.includes(q.materia) || (!q.materia && this.selectedSubjects.includes('Generale'))
-                                    ).length}
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        <div class="flex flex-col gap-4 items-center">
-                            <button 
-                                class="btn btn-primary"
-                                onclick="app.handleConfirmSubjects()" 
-                                ${this.selectedSubjects.length === 0 ? 'disabled' : ''}
-                            >
-                                Conferma e Scegli Numero Domande
-                            </button>
-                        </div>
-                    </div>
-                    
-                    ${this.error ? `
-                        <div class="alert alert-danger mt-6">
-                            <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                            </svg>
-                            ${this.error}
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    }
-    
-    renderFileUploadPage() {
-        return `
-            <h1 class="text-center text-3xl font-bold mb-8 text-gray-800">
-                Carica il documento con le domande e le risposte multiple, ed esegui il Quiz.
-            </h1>
-            
-            <div class="file-upload-area">
-                <input
-                    type="file"
-                    accept=".csv"
-                    class="file-input"
-                    id="file-upload"
-                />
-                <div class="upload-icon">
-                    <svg class="icon-lg text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                    </svg>
-                </div>
-                <div class="text-center">
-                    <div class="text-xl font-semibold text-gray-700 mb-2">
-                        Trascina o Clicca per Caricare
-                    </div>
-                    <div class="text-sm text-gray-500">
-                        Seleziona il file CSV contenente il Quiz
-                    </div>
-                </div>
-            </div>
-
-            ${this.error ? `
-                <div class="alert alert-danger mt-6">
-                    <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                    </svg>
-                    ${this.error}
-                </div>
-            ` : ''}
-
-            <div class="mt-6 text-center">
-                <a 
-                    href="https://drive.google.com/drive/folders/1ip-9tcoLmZXO7u9pdSH_H7v36jVxZ50q?usp=sharing"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-blue-600 hover:text-blue-800"
-                >
-                    Scarica qui il Quiz se non hai già il file da caricare.
-                </a>
-            </div>
-
-            <div class="mt-8 text-center text-sm text-gray-400">
-                Quiz App - V1.0 Versione HTML File Unico Offline
-            </div>
-        `;
-    }
-
-    renderQuestionSelection() {
-        let availableQuestions = this.allQuestions;
-        if (this.availableSubjects.length > 0 && this.selectedSubjects.length > 0) {
-            availableQuestions = this.allQuestions.filter(q => 
-                this.selectedSubjects.includes(q.materia) || (!q.materia && this.selectedSubjects.includes('Generale'))
-            );
-        }
-        
-        const maxQuestions = availableQuestions.length;
-        const questionOptions = [];
-        
-        for (let i = 10; i <= Math.min(100, maxQuestions); i += 10) {
-            questionOptions.push(i);
-        }
-        
-        if (maxQuestions > 100) {
-            for (let i = 150; i <= maxQuestions; i += 50) {
-                questionOptions.push(i);
+        handleAnswer(isCorrect) {
+            if (isCorrect) {
+                this.correctAnswers++;
+            } else {
+                this.incorrectAnswers++;
             }
-            
-            if (maxQuestions % 50 !== 0 && !questionOptions.includes(maxQuestions)) {
-                questionOptions.push(maxQuestions);
-            }
-        } else {
-            if (maxQuestions % 10 !== 0) {
-                questionOptions.push(maxQuestions);
-            }
+            // For a single-choice quiz, a selection moves to the next question
+            this.handleNext();
         }
 
-        return `
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Seleziona numero di domande</h2>
-                </div>
-                <div class="card-content">
-                    <div class="space-y-8">
-                        ${this.selectedSubjects.length > 0 ? `
-                            <div class="p-3 bg-green-50 rounded-lg text-center">
-                                <div class="text-sm font-medium text-green-800">
-                                    Materie selezionate: ${this.selectedSubjects.join(', ')}
-                                </div>
-                            </div>
-                        ` : ''}
-                        
-                        <div class="text-center">
-                            <div class="text-xl mb-4">
-                                Domande totali disponibili: <span class="font-semibold text-blue-600">${maxQuestions}</span>
-                            </div>
-                            
-                            <p class="text-gray-600 mb-6">
-                                Seleziona quante domande vuoi nel test (verranno scelte casualmente):
-                            </p>
+        renderFileUploadPage() {
+            return `
+                <div class="container flex justify-center items-center h-screen">
+                    <div class="card p-4">
+                        <div class="card-header">
+                            <h1 class="text-2xl font-bold">Quiz App</h1>
                         </div>
-                        
-                        <div class="grid grid-cols-4 gap-3">
-                            ${questionOptions.map(option => `
-                                <button
-                                    class="btn ${this.selectedQuestionCount === option ? 'btn-primary' : 'btn-outline'}"
-                                    onclick="app.selectedQuestionCount = ${option}; app.render();"
-                                    style="min-height: 3rem; font-size: 0.875rem;"
-                                >
-                                    ${option} domande
-                                </button>
-                            `).join('')}
-                        </div>
-
-                        <div class="flex flex-col gap-4 items-center">
-                            <button 
-                                class="btn btn-primary"
-                                onclick="app.handleStartQuiz()" 
-                                ${!this.selectedQuestionCount ? 'disabled' : ''}
-                            >
-                                Inizia Test
-                            </button>
-                            ${this.availableSubjects.length > 0 ? `
-                                <button class="btn btn-outline" onclick="app.showSubjectSelection = true; app.render();">
-                                    Cambia Materie
-                                </button>
-                            ` : ''}
-                            </div>
-                    </div>
-
-                    ${this.error ? `
-                        <div class="alert alert-danger mt-4">
-                            <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                            </svg>
-                            ${this.error}
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    }
-
-    renderResults() {
-        return `
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Risultati del Quiz</h2>
-                </div>
-                <div class="card-content">
-                    <div class="space-y-6">
-                        <div class="text-xl font-semibold">
-                            Punteggio: <span class="${this.answers.length > 0 && Math.round((this.score/this.answers.length) * 100) >= 66 ? 'text-green-600' : 'text-red-600'}">
-                                ${this.score} su ${this.answers.length}${this.answers.length > 0 ? ` (${Math.round((this.score/this.answers.length) * 100)}%)` : ''}
-                            </span>
-                        </div>
-                        
-                        <div class="text-lg">
-                            Tempo: ${this.formatTime(this.timeElapsed)}
-                        </div>
-                        
-                        ${this.answers.some(answer => answer.materia) ? this.renderResultsBySubject() : this.renderResultsList()}
-                        
-                        <div class="space-y-4">
-                            <button class="btn btn-primary w-full" onclick="app.handleDownloadResults()">
-                                <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                </svg>
-                                Scarica i risultati
-                            </button>
-                            <button class="btn btn-outline w-full" onclick="app.resetQuiz(); app.startTimer(); app.render();">
-                                <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                </svg>
-                                Ripeti Quiz con le stesse domande
-                            </button>
-                            ${this.availableSubjects.length > 0 ? `
-                                <button class="btn btn-outline w-full" onclick="app.handleRepeatWithDifferentSubjects()">
-                                    <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                    </svg>
-                                    Ripeti Quiz con Altre Materie
-                                </button>
-                            ` : ''}
+                        <div class="card-body text-center">
+                            <p class="mb-4">Carica il tuo file Quiz in formato JSON per iniziare.</p>
+                            <input type="file" id="file-upload" accept=".json" class="w-full">
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
-    }
+            `;
+        }
 
-    renderResultsBySubject() {
-        const groupedAnswers = this.answers.reduce((acc, answer, index) => {
-            const materia = answer.materia || 'Generale';
-            if (!acc[materia]) {
-                acc[materia] = [];
-            }
-            acc[materia].push({ ...answer, originalIndex: index });
-            return acc;
-        }, {});
-
-        return `
-            <div class="space-y-6">
-                ${Object.entries(groupedAnswers).map(([materia, materiaAnswers]) => `
-                    <div class="border-2 p-4 rounded-lg">
-                        <h3 class="text-lg font-semibold mb-3 text-blue-600">
-                            ${materia} (${materiaAnswers.filter(a => a.isCorrect).length}/${materiaAnswers.length})
-                        </h3>
-                        <div class="space-y-3">
-                            ${materiaAnswers.map((answer) => `
-                                <div class="p-3 rounded-lg ${answer.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
-                                    <div class="font-medium mb-2 text-sm">
-                                        Domanda ${answer.originalIndex + 1}: ${answer.question}
-                                        ${answer.iddomanda ? `<span class="text-gray-500"> (${answer.iddomanda})</span>` : ''}
-                                    </div>
-                                    <div class="flex items-start gap-2">
-                                        ${answer.isCorrect ? `
-                                            <svg class="icon text-green-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                        ` : `
-                                            <svg class="icon text-red-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                                            </svg>
-                                        `}
-                                        <div class="text-sm">
-                                            <div class="${answer.isCorrect ? 'text-green-700' : 'text-red-700 font-bold'}">La tua risposta: ${answer.selectedAnswer}</div>
-                                            ${!answer.isCorrect ? `
-                                                <div class="text-green-800 font-bold">
-                                                    Risposta corretta: ${answer.correctAnswer}
-                                                </div>
-                                            ` : ''}
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
+        renderSubjectSelection() {
+            const subjects = Object.keys(this.quizData);
+            return `
+                <div class="container flex justify-center items-center h-screen">
+                    <div class="card p-4">
+                        <div class="card-header">
+                            <h2 class="text-2xl font-semibold">Seleziona una materia</h2>
+                        </div>
+                        <div class="card-body">
+                            <ul class="space-y-4">
+                                ${subjects.map(subject => `
+                                    <li class="btn btn-secondary w-full" onclick="app.handleSubjectSelection('${subject}')">
+                                        ${subject}
+                                    </li>
+                                `).join('')}
+                            </ul>
                         </div>
                     </div>
-                `).join('')}
-            </div>
-        `;
-    }
+                </div>
+            `;
+        }
 
-    renderResultsList() {
-        return `
-            <div class="space-y-4">
-                ${this.answers.map((answer, index) => `
-                    <div class="p-4 rounded-lg ${answer.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
-                        <div class="font-medium mb-2">
-                            Domanda ${index + 1}: ${answer.question}
-                            ${answer.iddomanda ? `<span class="text-gray-500"> (${answer.iddomanda})</span>` : ''}
+        renderQuestionSelection() {
+            // This is a simplified view if the questions array is empty
+            return `
+                <div class="container flex justify-center items-center h-screen">
+                    <div class="card p-4">
+                        <div class="card-header">
+                            <h2 class="text-2xl font-semibold">Nessuna domanda trovata</h2>
                         </div>
-                        <div class="flex items-start gap-2">
-                            ${answer.isCorrect ? `
-                                <svg class="icon text-green-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            ` : `
-                                <svg class="icon text-red-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                                </svg>
-                            `}
-                            <div>
-                                <div class="${answer.isCorrect ? 'text-green-700' : 'text-red-700 font-bold'}">La tua risposta: ${answer.selectedAnswer}</div>
-                                ${!answer.isCorrect ? `
-                                    <div class="text-green-800 font-bold">
-                                        Risposta corretta: ${answer.correctAnswer}
+                        <div class="card-body text-center">
+                            <p class="mb-4">Il file JSON caricato non contiene domande per la materia selezionata o il formato non è corretto.</p>
+                            <button class="btn btn-primary w-full" onclick="window.location.reload()">Riprova</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        renderResults() {
+            return `
+                <div class="container flex justify-center items-center h-screen">
+                    <div class="card p-4">
+                        <div class="card-header">
+                            <h2 class="text-2xl font-semibold">Risultati del Quiz</h2>
+                        </div>
+                        <div class="card-body text-center">
+                            <p class="text-green-600 my-4">Risposte Corrette: ${this.correctAnswers}</p>
+                            <p class="text-red-600 my-4">Risposte Errate: ${this.incorrectAnswers}</p>
+                            <button class="btn btn-primary w-full" onclick="window.location.reload()">Ricomincia</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        renderQuiz() {
+            const question = this.questions[this.currentQuestion];
+            return `
+                <div class="container my-4">
+                    <div class="card p-4">
+                        <div class="card-header">
+                            <h2 class="text-2xl font-semibold text-center">${this.selectedSubject} Quiz</h2>
+                        </div>
+                        <div class="card-body space-y-4">
+                            ${question ? `
+                                <div>
+                                    <p class="font-bold my-4">${this.currentQuestion + 1}. ${question.text}</p>
+                                    <div class="flex flex-col gap-4">
+                                        ${question.options.map((option, index) => `
+                                            <div
+                                                class="btn btn-secondary"
+                                                onclick="app.handleAnswer(${option.isCorrect})"
+                                            >
+                                                ${option.text}
+                                            </div>
+                                        `)}
                                     </div>
                                 ` : ''}
                             </div>
                         </div>
                     </div>
-                `).join('')}
-            </div>
-        `;
-    }
-    
-    handleDownloadResults() {
-        const getAnswerCardHTML = (answer, index) => {
-            const isCorrectClass = answer.isCorrect ? 'bg-green-100' : 'bg-red-100';
-            const textColor = answer.isCorrect ? 'text-green-800' : 'text-red-800';
-            const correctHtml = answer.isCorrect ? `<div class="text-green-800">Risposta corretta!</div>` : `<div class="text-green-800">Risposta corretta: ${answer.correctAnswer}</div>`;
-            return `
-                <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: ${isCorrectClass};">
-                    <h4 style="font-weight: bold; margin-bottom: 5px;">Domanda ${index + 1}:</h4>
-                    <p style="margin-bottom: 10px;">${answer.question}</p>
-                    <p style="font-weight: bold; color: ${textColor};">La tua risposta: ${answer.selectedAnswer}</p>
-                    ${!answer.isCorrect ? correctHtml : ''}
                 </div>
             `;
-        };
-
-        let contentHTML = `
-            <!DOCTYPE html>
-            <html lang="it">
-            <head>
-                <meta charset="UTF-8">
-                <title>Risultati del Quiz</title>
-                <style>
-                    body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
-                    h1, h2 { text-align: center; }
-                    h1 { color: #1e40af; }
-                    h2 { margin-top: 30px; border-bottom: 2px solid #ccc; padding-bottom: 10px; }
-                    .summary { background-color: #f0f0f0; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
-                    .summary p { margin: 5px 0; }
-                    .correct { color: green; font-weight: bold; }
-                    .incorrect { color: red; font-weight: bold; }
-                    .bg-green-100 { background-color: #d1fae5; }
-                    .bg-red-100 { background-color: #fee2e2; }
-                    .text-green-800 { color: #166534; }
-                    .text-red-800 { color: #991b1b; }
-                </style>
-            </head>
-            <body>
-                <h1>Risultati del tuo Quiz</h1>
-                <div class="summary">
-                    <p><strong>Punteggio:</strong> ${this.score} su ${this.answers.length}</p>
-                    <p><strong>Percentuale:</strong> ${this.answers.length > 0 ? Math.round((this.score / this.answers.length) * 100) : 0}%</p>
-                    <p><strong>Tempo impiegato:</strong> ${this.formatTime(this.timeElapsed)}</p>
-                </div>
-        `;
-
-        if (this.answers.some(answer => answer.materia)) {
-            const groupedAnswers = this.answers.reduce((acc, answer, index) => {
-                const materia = answer.materia || 'Generale';
-                if (!acc[materia]) {
-                    acc[materia] = [];
-                }
-                acc[materia].push({ ...answer, originalIndex: index });
-                return acc;
-            }, {});
-
-            Object.entries(groupedAnswers).forEach(([materia, materiaAnswers]) => {
-                contentHTML += `<h2>${materia}</h2>`;
-                materiaAnswers.forEach((answer) => {
-                    contentHTML += getAnswerCardHTML(answer, answer.originalIndex);
-                });
-            });
-        } else {
-            this.answers.forEach((answer, index) => {
-                contentHTML += getAnswerCardHTML(answer, index);
-            });
         }
 
-        contentHTML += `</body></html>`;
-
-        const blob = new Blob([contentHTML], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'risultati_quiz.html';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    renderQuiz() {
-        const question = this.questions[this.currentQuestion];
-        if (!question) return '';
-
-        return `
-            <div class="card">
-                <div class="card-header">
-                    <div class="flex justify-between items-center">
-                        <h2 class="card-title">Domanda ${this.currentQuestion + 1} di ${this.questions.length}</h2>
-                        <div>
-                            <button class="btn btn-outline" onclick="app.showResult = true; app.stopTimer(); app.render();">
-                                Termina
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-content">
-                    <div class="space-y-6">
-                        <div class="flex justify-between text-sm text-gray-600">
-                            <div class="flex items-center">
-                                <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <span id="timer">${this.formatTime(this.timeElapsed)}</span>
-                            </div>
-                            <div>
-                                Punteggio: ${this.score}/${this.currentQuestion + (this.answerSubmitted ? 1 : 0)}
-                            </div>
-                        </div>
-
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${(this.currentQuestion / this.questions.length) * 100}%"></div>
-                        </div>
-
-                        ${question.materia ? `
-                            <div class="text-center">
-                                <div class="inline-block px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                                    Materia: ${question.materia}
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        ${question.iddomanda ? `
-                            <div class="text-center">
-                                <div class="inline-block px-3 py-1 bg-gray-50 text-gray-700 rounded text-sm">
-                                    Codice ID Domanda: ${question.iddomanda}
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        <div class="text-lg">
-                            ${question.question}
-                        </div>
-
-                        <div class="space-y-3">
-                            ${question.options.filter(option => option && option.trim() !== '').map((option, index) => {
-                                let buttonClass = "question-option";
-                                
-                                if (this.answerSubmitted) {
-                                    if (option === question.correctAnswer) {
-                                        buttonClass += " correct";
-                                    } else if (option === this.selectedAnswer) {
-                                        buttonClass += " incorrect";
-                                    } else {
-                                        buttonClass += " disabled";
-                                    }
-                                } else {
-                                    if (this.selectedAnswer === option) {
-                                        buttonClass += " selected";
-                                    }
-                                }
-
-                                return `
-                                    <button
-                                        class="${buttonClass}"
-                                        onclick="${!this.answerSubmitted ? `app.handleAnswerSubmit('${option.replace(/'/g, "\\'")}')` : ''}"
-                                        ${this.answerSubmitted ? 'disabled' : ''}
-                                    >
-                                        <span class="font-semibold mr-2">${String.fromCharCode(65 + index)}.</span>
-                                        <span style="flex: 1; text-align: left;">${option}</span>
-                                        ${this.answerSubmitted && option === question.correctAnswer ? `
-                                            <svg class="icon text-green-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                        ` : ''}
-                                        ${this.answerSubmitted && option === this.selectedAnswer && option !== question.correctAnswer ? `
-                                            <svg class="icon text-red-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                                            </svg>
-                                        ` : ''}
-                                    </button>
-                                `;
-                            }).join('')}
-                        </div>
-
-                        ${this.answerSubmitted ? `
-                            <div class="space-y-4">
-                                <div class="alert ${this.selectedAnswer === question.correctAnswer ? 'alert-success' : 'alert-danger'}">
-                                    ${this.selectedAnswer === question.correctAnswer ? `
-                                        <div class="flex items-center text-green-800">
-                                            <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            Risposta corretta!
-                                        </div>
-                                    ` : `
-                                        <div class="text-red-800">
-                                            <div class="flex items-center">
-                                                <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                                                </svg>
-                                                Risposta Sbagliata
-                                            </div>
-                                            <div class="mt-2">
-                                                La risposta corretta era: <strong>${question.correctAnswer}</strong>
-                                            </div>
-                                        </div>
-                                    `}
-                                </div>
-
-                                <button class="btn btn-primary w-full" onclick="app.handleNext()">
-                                    ${this.currentQuestion < this.questions.length - 1 ? 'Prossima Domanda' : 'Vedi Risultati'}
-                                </button>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    render() {
-        const app = document.getElementById('app');
-        
-        if (!this.isFileLoaded) {
-            app.innerHTML = this.renderFileUploadPage();
-            document.getElementById('file-upload').addEventListener('change', (e) => this.handleFileUpload(e));
-        } else if (this.isFileLoaded && this.showSubjectSelection) {
-            app.innerHTML = this.renderSubjectSelection();
-        } else if (this.isFileLoaded && !this.questions.length && !this.showSubjectSelection) {
-            app.innerHTML = this.renderQuestionSelection();
-        } else if (this.showResult) {
-            app.innerHTML = this.renderResults();
-        } else {
-            app.innerHTML = this.renderQuiz();
+        render() {
+            const app = document.getElementById('app');
+            
+            if (!this.isFileLoaded) {
+                app.innerHTML = this.renderFileUploadPage();
+                document.getElementById('file-upload').addEventListener('change', (e) => this.handleFileUpload(e));
+            } else if (this.isFileLoaded && this.showSubjectSelection) {
+                app.innerHTML = this.renderSubjectSelection();
+            } else if (this.isFileLoaded && !this.questions.length && !this.showSubjectSelection) {
+                app.innerHTML = this.renderQuestionSelection();
+            } else if (this.showResult) {
+                app.innerHTML = this.renderResults();
+            } else {
+                app.innerHTML = this.renderQuiz();
+            }
         }
     }
-}
 
-const app = new QuizApp();
+    const app = new QuizApp();
+</script>
+</body>
+</html>
