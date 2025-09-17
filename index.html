@@ -653,7 +653,7 @@
             return `
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title" style="color: #1e40af;">MCB TEST APP - V5.2 EVO</h2>
+                        <h2 class="card-title" style="color: #1e40af;">MCB TEST APP - V5.3 EVO</h2>
                     </div>
                     <div class="card-content">
                         <div class="space-y-8">
@@ -662,7 +662,7 @@
                                     Materie disponibili: <span class="font-semibold text-blue-600">${this.availableSubjects.length}</span>
                                 </div>
                                 <div class="text-gray-600">
-                                    Scegli le materie da includere nel Quiz poi premi il pulsante in fondo alla pagina per procedere.
+                                    Scegli le Buste Simulazione Esame e le Materie da includere nel Quiz poi premi il pulsante in fondo alla pagina per procedere.
                                 </div>
                             </div>
                             
@@ -1030,10 +1030,20 @@
         }
         
         handleDownloadResults() {
+            // Nuove variabili per data e ora
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const dateString = `${day}/${month}/${year}`;
+            const timeString = `${hours}:${minutes}`;
+
             const getAnswerCardHTML = (answer, index) => {
                 const isCorrectClass = answer.isCorrect ? 'bg-green-100' : 'bg-red-100';
                 const textColor = answer.isCorrect ? 'text-green-800' : 'text-red-800';
-                const correctHtml = answer.isCorrect ? `<div class="text-green-800">Risposta corretta!</div>` : `<div class="text-green-800">Risposta corretta: ${answer.correctAnswer}</div>`;
+                const correctHtml = answer.isCorrect ? `<div style="color: #166534;">Risposta corretta!</div>` : `<div style="color: #166534;">Risposta corretta: ${answer.correctAnswer}</div>`;
                 return `
                     <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: ${isCorrectClass};">
                         <h4 style="font-weight: bold; margin-bottom: 5px;">Domanda ${index + 1}:</h4>
@@ -1068,6 +1078,8 @@
                 <body>
                     <h1>Risultati del tuo Quiz</h1>
                     <div class="summary">
+                        <p><strong>Data:</strong> ${dateString}</p>
+                        <p><strong>Ora:</strong> ${timeString}</p>
                         <p><strong>Punteggio:</strong> ${this.score} su ${this.answers.length}</p>
                         <p><strong>Percentuale:</strong> ${this.answers.length > 0 ? Math.round((this.score / this.answers.length) * 100) : 0}%</p>
                         <p><strong>Tempo impiegato:</strong> ${this.formatTime(this.timeElapsed)}</p>
@@ -1102,7 +1114,9 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'risultati_quiz.html';
+            // Modifica del nome del file
+            const fileName = `risultati_quiz_${year}-${month}-${day}_${hours}-${minutes}.html`;
+            a.download = fileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
