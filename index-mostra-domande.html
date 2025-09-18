@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST MCB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            background: transparent;
+            min-height: 40px;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .btn-primary:disabled {
+            background-color: #94a3b8;
+            border-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            border-color: #d1d5db;
+            color: #374151;
+            background: white;
+        }
+
+        .btn-outline:hover {
+            background-color: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #3b82f6;
+            transition: width 0.3s ease;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+
+        .alert-danger {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .alert-info {
+            background-color: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+
+        .file-upload-area {
+            position: relative;
+            width: 100%;
+            height: 16rem;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            background-color: #f9fafb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-upload-area:hover {
+            background-color: #f3f4f6;
+            border-color: #3b82f6;
+        }
+
+        .file-input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            padding: 1rem;
+            background-color: #dbeafe;
+            border-radius: 50%;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .grid-cols-4 {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .subject-card {
+            padding: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .subject-card:hover {
+            border-color: #9ca3af;
+        }
+
+        .subject-card.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .question-option {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            word-wrap: break-word;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .question-option:hover {
+            border-color: #9ca3af;
+        }
+
+        .question-option.selected {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+        }
+
+        .question-option.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .question-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .question-option.disabled {
+            background-color: #f9fafb;
+            border-color: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+        
+        .justify-end {
+            justify-content: flex-end;
+        }
+
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-800 { color: #1f2937; }
+        .text-blue-600 { color: #2563eb; }
+        .text-blue-700 { color: #1d4ed8; }
+        .text-green-600 { color: #16a34a; }
+        .text-green-800 { color: #166534; }
+        .text-red-600 { color: #dc2626; }
+        .text-red-800 { color: #991b1b; }
+        .text-orange-600 { color: #ea580c; }
+        .text-orange-700 { color: #c2410c; }
+        .text-purple-600 { color: #9333ea; }
+        .text-purple-700 { color: #7e22ce; }
+
+        .bg-blue-50 { background-color: #eff6ff; }
+        .bg-blue-100 { background-color: #dbeafe; }
+        .bg-green-50 { background-color: #f0fdf4; }
+        .bg-red-50 { background-color: #fef2f2; }
+        .bg-gray-50 { background-color: #f9fafb; }
+
+        .border { border: 1px solid #d1d5db; }
+        .border-2 { border: 2px solid #d1d5db; }
+        .border-green-200 { border-color: #bbf7d0; }
+        .border-red-200 { border-color: #fecaca; }
+        .rounded { border-radius: 0.375rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-full { border-radius: 9999px; }
+
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-8 { padding-left: 2rem; padding-right: 2rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+
+        .m-2 { margin: 0.5rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mt-8 { margin-top: 2rem; }
+        .mr-2 { margin-right: 0.5rem; }
+
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+        .space-y-8 > * + * { margin-top: 2rem; }
+
+        .hidden { display: none; }
+        .block { display: block; }
+        .inline-block { display: inline-block; }
+
+        .icon {
+            width: 1rem;
+            height: 1rem;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .icon-lg {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        @media (max-width: 640px) {
+            .grid-cols-2 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+            .grid-cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .text-3xl { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="app">
+        </div>
+    </div>
+
+    <script>
+    class QuizApp {
+        constructor() {
+            this.questions = [];
+            this.currentQuestion = 0;
+            this.score = 0;
+            this.showResult = false;
+            this.selectedAnswer = null;
+            this.answerSubmitted = false;
+            this.timeElapsed = 0;
+            this.answers = [];
+            this.isFileLoaded = false;
+            this.error = null;
+            this.allQuestions = [];
+            this.selectedQuestionCount = null;
+            this.selectedSubjects = [];
+            this.availableSubjects = [];
+            this.showSubjectSelection = false;
+            this.timer = null;
+            
+            this.init();
+        }
+
+        async init() {
+            try {
+                const quizData = await this.getQuizData();
+                this.allQuestions = this.parseQuizData(quizData);
+                const subjects = [...new Set(this.allQuestions.map(q => q.materia).filter(Boolean))];
+                this.availableSubjects = subjects;
+                this.showSubjectSelection = subjects.length > 0;
+                this.isFileLoaded = true;
+                this.render();
+            } catch (err) {
+                this.error = `Errore nel caricamento del file domande.csv: ${err.message}`;
+                this.isFileLoaded = false;
+                this.render();
+            }
+        }
+
+        async getQuizData() {
+            const response = await fetch('domande.csv');
+            if (!response.ok) {
+                throw new Error(`Impossibile caricare il file. Stato: ${response.status}`);
+            }
+            return await response.text();
+        }
+
+        parseQuizData(text) {
+            try {
+                const rows = text.split('\n').filter(row => row.trim() !== '' && !row.trim().startsWith('Materia'));
+                
+                if (rows.length === 0) {
+                    throw new Error("Il file non contiene domande valide.");
+                }
+
+                const parsedQuestions = rows.map(row => {
+                    const columns = row.split(',');
+                    if (columns.length < 8) {
+                        throw new Error(`Formato non valido: la riga "${row}" non ha il numero corretto di colonne (8).`);
+                    }
+                    const [materia, iddomanda, question, ...options] = columns;
+                    const correctAnswer = options.pop();
+                    const validOptions = options.map(opt => opt.trim()).filter(opt => opt !== '');
+                    return {
+                        materia: materia.trim(),
+                        iddomanda: iddomanda.trim(),
+                        question: question.trim(),
+                        options: validOptions,
+                        correctAnswer: correctAnswer.trim()
+                    };
+                });
+
+                return parsedQuestions;
+            } catch (err) {
+                throw new Error(`Errore nel parsing dei dati: ${err.message}`);
+            }
+        }
+
+        shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        startTimer() {
+            this.stopTimer();
+            this.timer = setInterval(() => {
+                this.timeElapsed++;
+                this.updateTimer();
+            }, 1000);
+        }
+
+        stopTimer() {
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+        }
+
+        updateTimer() {
+            const timerElement = document.getElementById('timer');
+            if (timerElement) {
+                timerElement.textContent = this.formatTime(this.timeElapsed);
+            }
+        }
+        
+        handleStartQuiz() {
+            let filteredQuestions = this.allQuestions;
+            if (this.availableSubjects.length > 0 && this.selectedSubjects.length > 0) {
+                filteredQuestions = this.allQuestions.filter(q => 
+                    this.selectedSubjects.includes(q.materia) || (!q.materia && this.selectedSubjects.includes('Generale'))
+                );
+            }
+            
+            if (!this.selectedQuestionCount || this.selectedQuestionCount > filteredQuestions.length) {
+                this.error = "Seleziona un numero valido di domande per le materie scelte.";
+                this.render();
+                return;
+            }
+            
+            const shuffledQuestions = this.shuffleArray([...filteredQuestions]);
+            const selectedQuestions = shuffledQuestions.slice(0, this.selectedQuestionCount);
+            
+            this.questions = selectedQuestions;
+            this.error = null;
+            this.resetQuiz();
+            this.startTimer();
+            this.render();
+        }
+
+        resetQuiz() {
+            this.currentQuestion = 0;
+            this.score = 0;
+            this.showResult = false;
+            this.selectedAnswer = null;
+            this.answerSubmitted = false;
+            this.timeElapsed = 0;
+            this.answers = [];
+            this.stopTimer();
+        }
+
+        handleRepeatWithDifferentSubjects() {
+            this.questions = [];
+            this.currentQuestion = 0;
+            this.score = 0;
+            this.showResult = false;
+            this.selectedAnswer = null;
+            this.answerSubmitted = false;
+            this.timeElapsed = 0;
+            this.answers = [];
+            this.selectedQuestionCount = null;
+            this.selectedSubjects = [];
+            this.error = null;
+            this.showSubjectSelection = this.availableSubjects.length > 0;
+            this.stopTimer();
+            this.render();
+        }
+
+        handleSubjectToggle(subject) {
+            if (this.selectedSubjects.includes(subject)) {
+                this.selectedSubjects = this.selectedSubjects.filter(s => s !== subject);
+            } else {
+                this.selectedSubjects.push(subject);
+            }
+            this.render();
+        }
+
+        handleSelectAllSubjects() {
+            if (this.selectedSubjects.length === this.availableSubjects.length) {
+                this.selectedSubjects = [];
+            } else {
+                this.selectedSubjects = [...this.availableSubjects];
+            }
+            this.render();
+        }
+
+        handleConfirmSubjects() {
+            if (this.selectedSubjects.length === 0) {
+                this.error = "Seleziona almeno una materia.";
+                this.render();
+                return;
+            }
+            this.showSubjectSelection = false;
+            this.error = null;
+            this.render();
+        }
+
+        handleAnswerSubmit(selectedOption) {
+            if (!this.questions[this.currentQuestion]) return;
+            
+            this.selectedAnswer = selectedOption;
+            this.answerSubmitted = true;
+            
+            const isCorrect = selectedOption === this.questions[this.currentQuestion].correctAnswer;
+            const newAnswers = [...this.answers];
+            newAnswers[this.currentQuestion] = { 
+                materia: this.questions[this.currentQuestion].materia,
+                iddomanda: this.questions[this.currentQuestion].iddomanda,
+                question: this.questions[this.currentQuestion].question,
+                selectedAnswer: selectedOption,
+                correctAnswer: this.questions[this.currentQuestion].correctAnswer,
+                isCorrect
+            };
+            this.answers = newAnswers;
+            
+            if (isCorrect) {
+                this.score++;
+            }
+            
+            this.render();
+        }
+
+        handleNext() {
+            if (this.currentQuestion < this.questions.length - 1) {
+                this.currentQuestion++;
+                this.selectedAnswer = null;
+                this.answerSubmitted = false;
+            } else {
+                this.showResult = true;
+                this.stopTimer();
+            }
+            this.render();
+        }
+        
+        async sendQuizResultsToSheet() {
+            try {
+                const webAppUrl = 'https://script.google.com/macros/s/AKfycbyByUfgxspeMhU8kBER2_yZcdttnBkDFL1uCOb4N4UqBn7_bs_MFCa353S3YMPa-ARD/exec';
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const ipAddress = ipData.ip || 'N/A';
+
+                const geoResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
+                const geoData = await geoResponse.json();
+                const city = geoData.city || 'N/A';
+                const region = geoData.region || 'N/A';
+                const country = geoData.country_name || 'N/A';
+
+                const userAgent = navigator.userAgent;
+                let browserName = "Sconosciuto";
+                let os = "Sconosciuto";
+
+                if (userAgent.includes("Firefox")) {
+                    browserName = "Firefox";
+                } else if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+                    browserName = "Chrome";
+                } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+                    browserName = "Safari";
+                } else if (userAgent.includes("Edg")) {
+                    browserName = "Edge";
+                }
+
+                if (userAgent.includes("Mac")) {
+                    os = "macOS";
+                } else if (userAgent.includes("Windows")) {
+                    os = "Windows";
+                } else if (userAgent.includes("Android")) {
+                    os = "Android";
+                } else if (userAgent.includes("Linux")) {
+                    os = "Linux";
+                } else if (userAgent.includes("iPhone") || userAgent.includes("iPad")) {
+                    os = "iOS";
+                }
+                
+                const subjects = this.selectedSubjects.join(',');
+
+                const payload = new URLSearchParams({
+                    ip_address: ipAddress,
+                    score: `${this.score}/${this.answers.length}`,
+                    duration: this.formatTime(this.timeElapsed),
+                    browser: browserName,
+                    os: os,
+                    city: city,
+                    region: region,
+                    country: country,
+                    subjects: subjects
+                });
+
+                const logResponse = await fetch(webAppUrl, {
+                    method: 'POST',
+                    body: payload.toString(),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await logResponse.json();
+                console.log('Risultati inviati con successo:', result);
+
+            } catch (error) {
+                console.error('Errore durante l\'invio dei dati:', error);
+            }
+        }
+        
+        handleShowAllQuestions() {
+            let newWindow = window.open('', '_blank');
+
+            if (!newWindow) {
+                alert("Impossibile aprire una nuova finestra. Controlla le impostazioni del tuo browser per i popup.");
+                return;
+            }
+
+            const questionsHtml = this.allQuestions.map((q, index) => {
+                const materiaTag = q.materia ? `<span style="font-size: 0.8em; color: #667eea;">(${q.materia})</span>` : '';
+                const idTag = q.iddomanda ? `<span style="font-size: 0.8em; color: #9ca3af;">(ID: ${q.iddomanda})</span>` : '';
+                
+                const optionsHtml = q.options.map((option, optIndex) => {
+                    const isCorrect = option === q.correctAnswer;
+                    const optionStyle = isCorrect ? 'color: #10b981; font-weight: bold;' : 'color: #6b7280;';
+                    return `<li style="${optionStyle}">${String.fromCharCode(65 + optIndex)}. ${option}</li>`;
+                }).join('');
+
+                return `
+                    <div style="margin-bottom: 25px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #f9fafb;">
+                        <h3 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">
+                            ${index + 1}. ${q.question} ${materiaTag} ${idTag}
+                        </h3>
+                        <ul style="list-style-type: none; padding-left: 0; margin-left: 0;">
+                            ${optionsHtml}
+                        </ul>
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                            <span style="font-weight: bold; color: #16a34a;">Risposta Corretta:</span> 
+                            <span style="color: #374151;">${q.correctAnswer}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html lang="it">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Tutte le Domande e Risposte</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            line-height: 1.6;
+                            padding: 20px;
+                            background-color: #f8fafc;
+                            color: #334155;
+                        }
+                        .container {
+                            max-width: 900px;
+                            margin: 0 auto;
+                        }
+                        h1 {
+                            text-align: center;
+                            color: #1e40af;
+                            margin-bottom: 30px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>Tutte le Domande del Quiz</h1>
+                        ${questionsHtml}
+                    </div>
+                </body>
+                </html>
+            `;
+
+            newWindow.document.write(htmlContent);
+            newWindow.document.close();
+        }
+
+        renderSubjectSelection() {
+            const simulationBustaSubjects = this.availableSubjects.filter(subject => 
+                subject.toUpperCase().includes('SIMULAZIONE BUSTA')
+            ).sort();
+            const simulationAltreSubjects = this.availableSubjects.filter(subject => 
+                subject.toUpperCase().includes('SIMULAZIONE ALTRE')
+            ).sort();
+            const otherTestsSubjects = this.availableSubjects.filter(subject => 
+                subject.toUpperCase().startsWith('ALTRI TEST')
+            ).sort();
+            const testSingoleMaterieSubjects = this.availableSubjects.filter(subject => 
+                !subject.toUpperCase().includes('SIMULAZIONE BUSTA') &&
+                !subject.toUpperCase().includes('SIMULAZIONE ALTRE') &&
+                !subject.toUpperCase().startsWith('ALTRI TEST')
+            ).sort();
+
+            const renderSubjectCards = (subjects) => {
+                return subjects.map(subject => {
+                    const subjectQuestions = this.allQuestions.filter(q => q.materia === subject);
+                    return `
+                        <div
+                            class="subject-card ${this.selectedSubjects.includes(subject) ? 'selected' : ''}"
+                            onclick="app.handleSubjectToggle('${subject}')"
+                        >
+                            <div class="font-semibold text-gray-800 mb-1">
+                                ${subject}
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                ${subjectQuestions.length} domande
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            };
+
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title" style="color: #1e40af;">MCB TEST APP - V5.3 EVO</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="space-y-8">
+                            <div class="text-center">
+                                <div class="text-gray-600">
+                                    Scegli le Buste Simulazione Esame e le Materie da includere nel Quiz poi premi il pulsante in fondo alla pagina per procedere.
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <div class="flex justify-center gap-4">
+                                    <button 
+                                        class="btn ${this.selectedSubjects.length === this.availableSubjects.length ? 'btn-primary' : 'btn-outline'}"
+                                        onclick="app.handleSelectAllSubjects()"
+                                    >
+                                        ${this.selectedSubjects.length === this.availableSubjects.length ? 'Deseleziona Tutte' : 'Seleziona Tutte'}
+                                    </button>
+                                    <button 
+                                        class="btn btn-outline"
+                                        onclick="app.handleShowAllQuestions()"
+                                    >
+                                        Mostra tutte le domande e le risposte in una nuova pagina
+                                    </button>
+                                </div>
+                                
+                                ${simulationBustaSubjects.length > 0 ? `
+                                    <h3 class="text-lg font-semibold text-blu-700">Simulazioni fatte in classe</h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        ${renderSubjectCards(simulationBustaSubjects)}
+                                    </div>
+                                    <hr class="my-4 border-t-2 border-gray-200">
+                                ` : ''}
+                                
+                                ${simulationAltreSubjects.length > 0 ? `
+                                    <h3 class="text-lg font-semibold text-orange-700">Altre Simulazioni</h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        ${renderSubjectCards(simulationAltreSubjects)}
+                                    </div>
+                                    <hr class="my-4 border-t-2 border-gray-200">
+                                ` : ''}
+
+                                ${testSingoleMaterieSubjects.length > 0 ? `
+                                    <h3 class="text-lg font-semibold text-purple-700">Test Singole Materie Nostra Classe</h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        ${renderSubjectCards(testSingoleMaterieSubjects)}
+                                    </div>
+                                    <hr class="my-4 border-t-2 border-gray-200">
+                                ` : ''}
+
+                                ${otherTestsSubjects.length > 0 ? `
+                                    <h3 class="text-lg font-semibold text-orange-700">Altri Test</h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        ${renderSubjectCards(otherTestsSubjects)}
+                                    </div>
+                                ` : ''}
+
+                            </div>
+
+                            ${this.selectedSubjects.length > 0 ? `
+                                <div class="p-4 bg-blue-50 rounded-lg border">
+                                    <div class="text-blue-700 font-medium">
+                                        Materie selezionate: ${this.selectedSubjects.length}
+                                    </div>
+                                    <div class="text-blue-600">
+                                        Domande totali per queste materie: ${this.allQuestions.filter(q => 
+                                            this.selectedSubjects.includes(q.materia) || (!q.materia && this.selectedSubjects.includes('Generale'))
+                                        ).length}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <div class="flex flex-col gap-4 items-center">
+                                <button 
+                                    class="btn btn-primary"
+                                    onclick="app.handleConfirmSubjects()" 
+                                    ${this.selectedSubjects.length === 0 ? 'disabled' : ''}
+                                >
+                                    Conferma e Scegli Numero Domande
+                                </button>
+                            </div>
+                        </div>
+                        
+                        ${this.error ? `
+                            <div class="alert alert-danger mt-6">
+                                <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                </svg>
+                                ${this.error}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        renderFileUploadPage() {
+            return `
+                <h1 class="text-center text-3xl font-bold mb-8 text-gray-800">
+                    Carica il documento con le domande e le risposte multiple, ed esegui il Quiz.
+                </h1>
+                
+                <div class="file-upload-area">
+                    <input
+                        type="file"
+                        accept=".csv"
+                        class="file-input"
+                        id="file-upload"
+                    />
+                    <div class="upload-icon">
+                        <svg class="icon-lg text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xl font-semibold text-gray-700 mb-2">
+                            Trascina o Clicca per Caricare
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            Seleziona il file CSV contenente il Quiz
+                        </div>
+                    </div>
+                </div>
+
+                ${this.error ? `
+                    <div class="alert alert-danger mt-6">
+                        <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
+                        ${this.error}
+                    </div>
+                ` : ''}
+
+                <div class="mt-6 text-center">
+                    <a 
+                        href="https://drive.google.com/drive/folders/1ip-9tcoLmZXO7u9pdSH_H7v36jVxZ50q?usp=sharing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-blue-600 hover:text-blue-800"
+                    >
+                        Scarica qui il Quiz se non hai già il file da caricare.
+                    </a>
+                </div>
+
+                <div class="mt-8 text-center text-sm text-gray-400">
+                    Quiz App - V1.0 Versione HTML File Unico Offline
+                </div>
+            `;
+        }
+
+        renderQuestionSelection() {
+            let availableQuestions = this.allQuestions;
+            if (this.availableSubjects.length > 0 && this.selectedSubjects.length > 0) {
+                availableQuestions = this.allQuestions.filter(q => 
+                    this.selectedSubjects.includes(q.materia) || (!q.materia && this.selectedSubjects.includes('Generale'))
+                );
+            }
+            
+            const maxQuestions = availableQuestions.length;
+            const questionOptions = [];
+            
+            for (let i = 10; i <= Math.min(100, maxQuestions); i += 10) {
+                questionOptions.push(i);
+            }
+            
+            if (maxQuestions > 100) {
+                for (let i = 150; i <= maxQuestions; i += 50) {
+                    questionOptions.push(i);
+                }
+                
+                if (maxQuestions % 50 !== 0 && !questionOptions.includes(maxQuestions)) {
+                    questionOptions.push(maxQuestions);
+                }
+            } else {
+                if (maxQuestions % 10 !== 0) {
+                    questionOptions.push(maxQuestions);
+                }
+            }
+
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Seleziona numero di domande</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="space-y-8">
+                            ${this.selectedSubjects.length > 0 ? `
+                                <div class="p-3 bg-green-50 rounded-lg text-center">
+                                    <div class="text-sm font-medium text-green-800">
+                                        Materie selezionate: ${this.selectedSubjects.join(', ')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="text-center">
+                                <div class="text-xl mb-4">
+                                    Domande totali disponibili: <span class="font-semibold text-blue-600">${maxQuestions}</span>
+                                </div>
+                                
+                                <p class="text-gray-600 mb-6">
+                                    Seleziona quante domande vuoi nel test (verranno scelte casualmente):
+                                </p>
+                            </div>
+                            
+                            <div class="grid grid-cols-4 gap-3">
+                                ${questionOptions.map(option => `
+                                    <button
+                                        class="btn ${this.selectedQuestionCount === option ? 'btn-primary' : 'btn-outline'}"
+                                        onclick="app.selectedQuestionCount = ${option}; app.render();"
+                                        style="min-height: 3rem; font-size: 0.875rem;"
+                                    >
+                                        ${option} domande
+                                    </button>
+                                `).join('')}
+                            </div>
+
+                            <div class="flex flex-col gap-4 items-center">
+                                <button 
+                                    class="btn btn-primary"
+                                    onclick="app.handleStartQuiz()" 
+                                    ${!this.selectedQuestionCount ? 'disabled' : ''}
+                                >
+                                    Inizia Test
+                                </button>
+                                ${this.availableSubjects.length > 0 ? `
+                                    <button class="btn btn-outline" onclick="app.showSubjectSelection = true; app.render();">
+                                        Cambia Materie
+                                    </button>
+                                ` : ''}
+                                </div>
+                        </div>
+
+                        ${this.error ? `
+                            <div class="alert alert-danger mt-4">
+                                <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                </svg>
+                                ${this.error}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        renderResults() {
+            this.sendQuizResultsToSheet();
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Risultati del Quiz</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="space-y-6">
+                            <div class="text-xl font-semibold">
+                                Punteggio: <span class="${this.answers.length > 0 && Math.round((this.score/this.answers.length) * 100) >= 66 ? 'text-green-600' : 'text-red-600'}">
+                                    ${this.score} su ${this.answers.length}${this.answers.length > 0 ? ` (${Math.round((this.score/this.answers.length) * 100)}%)` : ''}
+                                </span>
+                            </div>
+                            
+                            <div class="text-lg">
+                                Tempo: ${this.formatTime(this.timeElapsed)}
+                            </div>
+                            
+                            ${this.answers.some(answer => answer.materia) ? this.renderResultsBySubject() : this.renderResultsList()}
+                            
+                            <div class="space-y-4">
+                                <button class="btn btn-primary w-full" onclick="app.handleDownloadResults()">
+                                    <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                    Scarica i risultati
+                                </button>
+                                <button class="btn btn-outline w-full" onclick="app.resetQuiz(); app.startTimer(); app.render();">
+                                    <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    Ripeti Quiz con le stesse domande
+                                </button>
+                                ${this.availableSubjects.length > 0 ? `
+                                    <button class="btn btn-outline w-full" onclick="app.handleRepeatWithDifferentSubjects()">
+                                        <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                        </svg>
+                                        Ripeti Quiz con Altre Materie
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        renderResultsBySubject() {
+            const groupedAnswers = this.answers.reduce((acc, answer, index) => {
+                const materia = answer.materia || 'Generale';
+                if (!acc[materia]) {
+                    acc[materia] = [];
+                }
+                acc[materia].push({ ...answer, originalIndex: index });
+                return acc;
+            }, {});
+
+            return `
+                <div class="space-y-6">
+                    ${Object.entries(groupedAnswers).map(([materia, materiaAnswers]) => `
+                        <div class="border-2 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold mb-3 text-blue-600">
+                                ${materia} (${materiaAnswers.filter(a => a.isCorrect).length}/${materiaAnswers.length})
+                            </h3>
+                            <div class="space-y-3">
+                                ${materiaAnswers.map((answer) => `
+                                    <div class="p-3 rounded-lg ${answer.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                                        <div class="font-medium mb-2 text-sm">
+                                            Domanda ${answer.originalIndex + 1}: ${answer.question}
+                                            ${answer.iddomanda ? `<span class="text-gray-500"> (${answer.iddomanda})</span>` : ''}
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            ${answer.isCorrect ? `
+                                                <svg class="icon text-green-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            ` : `
+                                                <svg class="icon text-red-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                                </svg>
+                                            `}
+                                            <div class="text-sm">
+                                                <div class="${answer.isCorrect ? 'text-green-700' : 'text-red-700 font-bold'}">La tua risposta: ${answer.selectedAnswer}</div>
+                                                ${!answer.isCorrect ? `
+                                                    <div class="text-green-800 font-bold">
+                                                        Risposta corretta: ${answer.correctAnswer}
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        renderResultsList() {
+            return `
+                <div class="space-y-4">
+                    ${this.answers.map((answer, index) => `
+                        <div class="p-4 rounded-lg ${answer.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                            <div class="font-medium mb-2">
+                                Domanda ${index + 1}: ${answer.question}
+                                ${answer.iddomanda ? `<span class="text-gray-500"> (${answer.iddomanda})</span>` : ''}
+                            </div>
+                            <div class="flex items-start gap-2">
+                                ${answer.isCorrect ? `
+                                    <svg class="icon text-green-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                ` : `
+                                    <svg class="icon text-red-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                    </svg>
+                                `}
+                                <div>
+                                    <div class="${answer.isCorrect ? 'text-green-700' : 'text-red-700 font-bold'}">La tua risposta: ${answer.selectedAnswer}</div>
+                                    ${!answer.isCorrect ? `
+                                        <div class="text-green-800 font-bold">
+                                            Risposta corretta: ${answer.correctAnswer}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        handleDownloadResults() {
+            this.sendQuizResultsToSheet();
+
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const dateString = `${day}/${month}/${year}`;
+            const timeString = `${hours}:${minutes}`;
+
+            const getAnswerCardHTML = (answer, index) => {
+                const isCorrectClass = answer.isCorrect ? 'bg-green-100' : 'bg-red-100';
+                const textColor = answer.isCorrect ? 'text-green-800' : 'text-red-800';
+                const correctHtml = answer.isCorrect ? `<div style="color: #166534;">Risposta corretta!</div>` : `<div style="color: #166534;">Risposta corretta: ${answer.correctAnswer}</div>`;
+                return `
+                    <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: ${isCorrectClass};">
+                        <h4 style="font-weight: bold; margin-bottom: 5px;">Domanda ${index + 1}:</h4>
+                        <p style="margin-bottom: 10px;">${answer.question}</p>
+                        <p style="font-weight: bold; color: ${textColor};">La tua risposta: ${answer.selectedAnswer}</p>
+                        ${!answer.isCorrect ? correctHtml : ''}
+                    </div>
+                `;
+            };
+
+            let contentHTML = `
+                <!DOCTYPE html>
+                <html lang="it">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Risultati del Quiz</title>
+                    <style>
+                        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
+                        h1, h2 { text-align: center; }
+                        h1 { color: #1e40af; }
+                        h2 { margin-top: 30px; border-bottom: 2px solid #ccc; padding-bottom: 10px; }
+                        .summary { background-color: #f0f0f0; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
+                        .summary p { margin: 5px 0; }
+                        .correct { color: green; font-weight: bold; }
+                        .incorrect { color: red; font-weight: bold; }
+                        .bg-green-100 { background-color: #d1fae5; }
+                        .bg-red-100 { background-color: #fee2e2; }
+                        .text-green-800 { color: #166534; }
+                        .text-red-800 { color: #991b1b; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Risultati del tuo Quiz</h1>
+                    <div class="summary">
+                        <p><strong>Data:</strong> ${dateString}</p>
+                        <p><strong>Ora:</strong> ${timeString}</p>
+                        <p><strong>Punteggio:</strong> ${this.score} su ${this.answers.length}</p>
+                        <p><strong>Percentuale:</strong> ${this.answers.length > 0 ? Math.round((this.score / this.answers.length) * 100) : 0}%</p>
+                        <p><strong>Tempo impiegato:</strong> ${this.formatTime(this.timeElapsed)}</p>
+                    </div>
+            `;
+
+            if (this.answers.some(answer => answer.materia)) {
+                const groupedAnswers = this.answers.reduce((acc, answer, index) => {
+                    const materia = answer.materia || 'Generale';
+                    if (!acc[materia]) {
+                        acc[materia] = [];
+                    }
+                    acc[materia].push({ ...answer, originalIndex: index });
+                    return acc;
+                }, {});
+
+                Object.entries(groupedAnswers).forEach(([materia, materiaAnswers]) => {
+                    contentHTML += `<h2>${materia}</h2>`;
+                    materiaAnswers.forEach((answer) => {
+                        contentHTML += getAnswerCardHTML(answer, answer.originalIndex);
+                    });
+                });
+            } else {
+                this.answers.forEach((answer, index) => {
+                    contentHTML += getAnswerCardHTML(answer, index);
+                });
+            }
+
+            contentHTML += `</body></html>`;
+
+            const blob = new Blob([contentHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const fileName = `risultati_quiz_${year}-${month}-${day}_${hours}-${minutes}.html`;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        renderQuiz() {
+            const question = this.questions[this.currentQuestion];
+            if (!question) return '';
+
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="flex justify-between items-center">
+                            <h2 class="card-title">Domanda ${this.currentQuestion + 1} di ${this.questions.length}</h2>
+                            <div>
+                                <button class="btn btn-outline" onclick="app.showResult = true; app.stopTimer(); app.render();">
+                                    Termina
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="space-y-6">
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <div class="flex items-center">
+                                    <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span id="timer">${this.formatTime(this.timeElapsed)}</span>
+                                </div>
+                                <div>
+                                    Punteggio: ${this.score}/${this.currentQuestion + (this.answerSubmitted ? 1 : 0)}
+                                </div>
+                            </div>
+
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(this.currentQuestion / this.questions.length) * 100}%"></div>
+                            </div>
+
+                            ${question.materia ? `
+                                <div class="text-center">
+                                    <div class="inline-block px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                        Materia: ${question.materia}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            ${question.iddomanda ? `
+                                <div class="text-center">
+                                    <div class="inline-block px-3 py-1 bg-gray-50 text-gray-700 rounded text-sm">
+                                        Codice ID Domanda: ${question.iddomanda}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <div class="text-lg">
+                                ${question.question}
+                            </div>
+
+                            <div class="space-y-3">
+                                ${question.options.filter(option => option && option.trim() !== '').map((option, index) => {
+                                    let buttonClass = "question-option";
+                                    
+                                    if (this.answerSubmitted) {
+                                        if (option === question.correctAnswer) {
+                                            buttonClass += " correct";
+                                        } else if (option === this.selectedAnswer) {
+                                            buttonClass += " incorrect";
+                                        } else {
+                                            buttonClass += " disabled";
+                                        }
+                                    } else {
+                                        if (this.selectedAnswer === option) {
+                                            buttonClass += " selected";
+                                        }
+                                    }
+
+                                    return `
+                                        <button
+                                            class="${buttonClass}"
+                                            onclick="${!this.answerSubmitted ? `app.handleAnswerSubmit('${option.replace(/'/g, "\\'")}')` : ''}"
+                                            ${this.answerSubmitted ? 'disabled' : ''}
+                                        >
+                                            <span class="font-semibold mr-2">${String.fromCharCode(65 + index)}.</span>
+                                            <span style="flex: 1; text-align: left;">${option}</span>
+                                            ${this.answerSubmitted && option === question.correctAnswer ? `
+                                                <svg class="icon text-green-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            ` : ''}
+                                            ${this.answerSubmitted && option === this.selectedAnswer && option !== question.correctAnswer ? `
+                                                <svg class="icon text-red-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                                </svg>
+                                            ` : ''}
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+
+                            ${this.answerSubmitted ? `
+                                <div class="space-y-4">
+                                    <div class="alert ${this.selectedAnswer === question.correctAnswer ? 'alert-success' : 'alert-danger'}">
+                                        ${this.selectedAnswer === question.correctAnswer ? `
+                                            <div class="flex items-center text-green-800">
+                                                <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                Risposta corretta!
+                                            </div>
+                                        ` : `
+                                            <div class="text-red-800">
+                                                <div class="flex items-center">
+                                                    <svg class="icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                                    </svg>
+                                                    Risposta Sbagliata
+                                                </div>
+                                                <div class="mt-2">
+                                                    La risposta corretta era: <strong>${question.correctAnswer}</strong>
+                                                </div>
+                                            </div>
+                                        `}
+                                    </div>
+
+                                    <button class="btn btn-primary w-full" onclick="app.handleNext()">
+                                        ${this.currentQuestion < this.questions.length - 1 ? 'Prossima Domanda' : 'Vedi Risultati'}
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        render() {
+            const app = document.getElementById('app');
+            
+            if (!this.isFileLoaded) {
+                app.innerHTML = this.renderFileUploadPage();
+                document.getElementById('file-upload').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            try {
+                                this.allQuestions = this.parseQuizData(event.target.result);
+                                const subjects = [...new Set(this.allQuestions.map(q => q.materia).filter(Boolean))];
+                                this.availableSubjects = subjects;
+                                this.showSubjectSelection = subjects.length > 0;
+                                this.isFileLoaded = true;
+                                this.render();
+                            } catch (err) {
+                                this.error = `Errore nel parsing del file: ${err.message}`;
+                                this.isFileLoaded = false;
+                                this.render();
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                });
+            } else if (this.isFileLoaded && this.showSubjectSelection) {
+                app.innerHTML = this.renderSubjectSelection();
+            } else if (this.isFileLoaded && !this.questions.length && !this.showSubjectSelection) {
+                app.innerHTML = this.renderQuestionSelection();
+            } else if (this.showResult) {
+                app.innerHTML = this.renderResults();
+            } else {
+                app.innerHTML = this.renderQuiz();
+            }
+        }
+    }
+
+    const app = new QuizApp();
+</script>
+</body>
+</html>
