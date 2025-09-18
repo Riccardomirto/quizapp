@@ -619,7 +619,7 @@
         async sendQuizResultsToSheet() {
             try {
                 // URL della tua API di Google Apps Script (SOSTITUISCI CON IL TUO URL)
-                const webAppUrl = 'https://script.google.com/macros/s/AKfycbwxhg4SMliOXY0_8q5-U_4s2lh-O5O7UqnB3jjXDsUzOITJkrdelzCtZaqpGvniW75G/exec';
+                const webAppUrl = 'https://script.google.com/macros/s/AKfycbyoK1_8JhKyk6CmXD87EVzSrH7Lf0qWfAqjfIdOghcGbu5HSaYH48Jso2ym1hrSH2N2/exec';
 
                 // 1. Ottieni l'indirizzo IP
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
@@ -659,8 +659,11 @@
                 } else if (userAgent.includes("iPhone") || userAgent.includes("iPad")) {
                     os = "iOS";
                 }
+                
+                // 4. Trasforma l'array delle materie selezionate in una stringa separata da virgola
+                const subjects = this.selectedSubjects.join(',');
 
-                // 4. Prepara il payload con tutti i dati
+                // 5. Prepara il payload con tutti i dati
                 const payload = new URLSearchParams({
                     ip_address: ipAddress,
                     score: `${this.score}/${this.answers.length}`,
@@ -669,10 +672,11 @@
                     os: os,
                     city: city,
                     region: region,
-                    country: country
+                    country: country,
+                    subjects: subjects
                 });
 
-                // 5. Invia i dati all'API di Google Apps Script
+                // 6. Invia i dati all'API di Google Apps Script
                 const logResponse = await fetch(webAppUrl, {
                     method: 'POST',
                     body: payload.toString(),
