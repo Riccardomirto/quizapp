@@ -1191,7 +1191,7 @@
                 const correctHtml = answer.isCorrect ? '' : `<div style="color: #166534;">Risposta corretta: ${answer.correctAnswer}</div>`;
                 return `
                     <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: ${isCorrectClass};">
-                        <h4 style="font-weight: bold; margin-bottom: 5px;">Domanda ${index + 1}:</h4>
+                        <h4 style="font-weight: bold; margin-bottom: 5px;">Domanda ${answer.iddomanda}:</h4>
                         <p style="margin-bottom: 10px;">${answer.question}</p>
                         <p style="font-weight: bold; color: ${textColor};">La tua risposta: ${answer.selectedAnswer}</p>
                         ${!answer.isCorrect ? correctHtml : ''}
@@ -1245,7 +1245,7 @@
                     const correctCount = materiaAnswers.filter(a => a.isCorrect).length;
                     const totalCount = materiaAnswers.length;
                     const percentage = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
-                    contentHTML += `<h2>${materia} ${correctCount}/${totalCount} - ${percentage}%</h2>`;
+                    contentHTML += `<h2>${materia}</h2>`;
                     materiaAnswers.forEach((answer) => {
                         contentHTML += getAnswerCardHTML(answer, answer.originalIndex);
                     });
