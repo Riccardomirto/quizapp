@@ -371,7 +371,42 @@
             width: 3rem;
             height: 3rem;
         }
-
+        
+        /* Stili per il file di download */
+        .download-summary-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .download-subject-card {
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            background-color: #f9fafb;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .download-question-card {
+            padding: 1rem;
+            border-radius: 8px;
+            border: 2px solid;
+            margin-bottom: 0.75rem;
+        }
+        
+        .download-question-card-correct {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+        
+        .download-question-card-incorrect {
+            background-color: #fef2f2;
+            border-color: #fecaca;
+        }
+        
         @media (max-width: 640px) {
             .grid-cols-2 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
             .grid-cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -819,38 +854,36 @@
                                 </button>
                             </div>
                             
-                            <div class="space-y-6">
-                                ${simulationBustaSubjects.length > 0 ? `
-                                    <h3 class="text-lg font-semibold text-blu-700">Simulazioni fatte in classe</h3>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        ${renderSubjectCards(simulationBustaSubjects)}
-                                    </div>
-                                    <hr class="my-4 border-t-2 border-gray-200">
-                                ` : ''}
-                                
-                                ${simulationAltreSubjects.length > 0 ? `
-                                    <h3 class="text-lg font-semibold text-orange-700">Altre Simulazioni</h3>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        ${renderSubjectCards(simulationAltreSubjects)}
-                                    </div>
-                                    <hr class="my-4 border-t-2 border-gray-200">
-                                ` : ''}
+                            ${simulationBustaSubjects.length > 0 ? `
+                                <h3 class="text-lg font-semibold text-blu-700">Simulazioni fatte in classe</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    ${renderSubjectCards(simulationBustaSubjects)}
+                                </div>
+                                <hr class="my-4 border-t-2 border-gray-200">
+                            ` : ''}
+                            
+                            ${simulationAltreSubjects.length > 0 ? `
+                                <h3 class="text-lg font-semibold text-orange-700">Altre Simulazioni</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    ${renderSubjectCards(simulationAltreSubjects)}
+                                </div>
+                                <hr class="my-4 border-t-2 border-gray-200">
+                            ` : ''}
 
-                                ${testSingoleMaterieSubjects.length > 0 ? `
-                                    <h3 class="text-lg font-semibold text-purple-700">Test Singole Materie Nostra Classe</h3>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        ${renderSubjectCards(testSingoleMaterieSubjects)}
-                                    </div>
-                                    <hr class="my-4 border-t-2 border-gray-200">
-                                ` : ''}
+                            ${testSingoleMaterieSubjects.length > 0 ? `
+                                <h3 class="text-lg font-semibold text-purple-700">Test Singole Materie Nostra Classe</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    ${renderSubjectCards(testSingoleMaterieSubjects)}
+                                </div>
+                                <hr class="my-4 border-t-2 border-gray-200">
+                            ` : ''}
 
-                                ${otherTestsSubjects.length > 0 ? `
-                                    <h3 class="text-lg font-semibold text-orange-700">Altri Test</h3>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        ${renderSubjectCards(otherTestsSubjects)}
-                                    </div>
-                                ` : ''}
-                            </div>
+                            ${otherTestsSubjects.length > 0 ? `
+                                <h3 class="text-lg font-semibold text-orange-700">Altri Test</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    ${renderSubjectCards(otherTestsSubjects)}
+                                </div>
+                            ` : ''}
 
                             ${this.selectedSubjects.length > 0 ? `
                                 <div class="p-4 bg-blue-50 rounded-lg border">
@@ -938,7 +971,7 @@
                 </div>
 
                 <div class="mt-8 text-center text-sm text-gray-400">
-                    Quiz App - V1.0 Versione HTML Unico Offline
+                    Quiz App - V1.0 Versione HTML File Unico Offline
                 </div>
             `;
         }
@@ -1186,99 +1219,152 @@
             const timeString = `${hours}:${minutes}`;
 
             const getAnswerCardHTML = (answer, index) => {
-                const isCorrectClass = answer.isCorrect ? 'bg-green-100' : 'bg-red-100';
-                const textColor = answer.isCorrect ? 'text-green-800' : 'text-red-800';
-                const correctHtml = answer.isCorrect ? '' : `<div style="color: #166534;">Risposta corretta: ${answer.correctAnswer}</div>`;
+                const cardClass = answer.isCorrect ? 'download-question-card download-question-card-correct' : 'download-question-card download-question-card-incorrect';
+                const questionNumber = index + 1;
+                const scoreHTML = answer.isCorrect ? `
+                    <div class="text-green-700 font-medium">Risposta Corretta</div>
+                ` : `
+                    <div class="text-red-700 font-medium">Risposta Errata</div>
+                `;
+
                 return `
-                    <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: ${isCorrectClass};">
-                        <h4 style="font-weight: bold; margin-bottom: 5px;">Domanda ${answer.iddomanda}:</h4>
-                        <p style="margin-bottom: 10px;">${answer.question}</p>
-                        <p style="font-weight: bold; color: ${textColor};">La tua risposta: ${answer.selectedAnswer}</p>
-                        ${!answer.isCorrect ? correctHtml : ''}
+                    <div class="${cardClass}">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="font-semibold text-lg text-gray-800">Domanda ${questionNumber}:</span>
+                            <span class="text-sm text-gray-500">(${answer.iddomanda})</span>
+                        </div>
+                        <p class="text-gray-700 mb-2">${answer.question}</p>
+                        <div class="text-sm mb-1">
+                            <span class="${answer.isCorrect ? 'text-green-800' : 'text-red-800'} font-semibold">La tua risposta:</span> ${answer.selectedAnswer}
+                        </div>
+                        ${!answer.isCorrect ? `
+                            <div class="text-sm">
+                                <span class="text-green-800 font-semibold">Risposta corretta:</span> ${answer.correctAnswer}
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             };
 
-            let contentHTML = `
+            const groupedAnswers = this.answers.reduce((acc, answer, index) => {
+                const materia = answer.materia || 'Generale';
+                if (!acc[materia]) {
+                    acc[materia] = { answers: [], correctCount: 0 };
+                }
+                acc[materia].answers.push({ ...answer, originalIndex: index });
+                if (answer.isCorrect) {
+                    acc[materia].correctCount++;
+                }
+                return acc;
+            }, {});
+
+            let resultsHTML = '';
+            Object.entries(groupedAnswers).forEach(([materia, data]) => {
+                resultsHTML += `
+                    <div class="download-subject-card">
+                        <h3 class="text-xl font-semibold text-blue-700 mb-4">
+                            ${materia} (${data.correctCount}/${data.answers.length})
+                        </h3>
+                        <div class="space-y-4">
+                            ${data.answers.map(getAnswerCardHTML).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            const cssContent = `
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    background-color: #f8fafc;
+                    color: #334155;
+                    line-height: 1.6;
+                    padding: 2rem;
+                }
+                .container {
+                    max-width: 900px;
+                    margin: 0 auto;
+                }
+                .download-summary-card {
+                    background-color: white;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #e2e8f0;
+                    padding: 1.5rem;
+                    margin-bottom: 2rem;
+                    text-align: center;
+                }
+                .download-subject-card {
+                    border-radius: 12px;
+                    border: 2px solid #e2e8f0;
+                    background-color: #f9fafb;
+                    padding: 1.5rem;
+                    margin-bottom: 2rem;
+                }
+                .download-question-card {
+                    padding: 1rem;
+                    border-radius: 8px;
+                    border: 2px solid;
+                    margin-bottom: 0.75rem;
+                }
+                .download-question-card-correct {
+                    background-color: #f0fdf4;
+                    border-color: #bbf7d0;
+                }
+                .download-question-card-incorrect {
+                    background-color: #fef2f2;
+                    border-color: #fecaca;
+                }
+                .text-green-700 { color: #15803d; }
+                .text-green-800 { color: #166534; }
+                .text-red-700 { color: #b91c1c; }
+                .text-red-800 { color: #991b1b; }
+                .text-blue-700 { color: #1d4ed8; }
+                .text-gray-500 { color: #6b7280; }
+                .text-gray-700 { color: #374151; }
+                .text-gray-800 { color: #1f2937; }
+                .font-semibold { font-weight: 600; }
+                .font-bold { font-weight: 700; }
+                .text-lg { font-size: 1.125rem; }
+                .text-xl { font-size: 1.25rem; }
+                .text-3xl { font-size: 1.875rem; }
+                .text-sm { font-size: 0.875rem; }
+                .flex { display: flex; }
+                .items-center { align-items: center; }
+                .gap-2 { gap: 0.5rem; }
+                .mb-1 { margin-bottom: 0.25rem; }
+                .mb-2 { margin-bottom: 0.5rem; }
+                .mb-4 { margin-bottom: 1rem; }
+            `;
+
+            const htmlContent = `
                 <!DOCTYPE html>
                 <html lang="it">
                 <head>
                     <meta charset="UTF-8">
                     <title>Risultati del Quiz</title>
-                    <style>
-                        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
-                        h1, h2 { text-align: center; }
-                        h1 { color: #1e40af; }
-                        h2 { margin-top: 30px; border-bottom: 2px solid #ccc; padding-bottom: 10px; }
-                        .summary { background-color: #f0f0f0; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
-                        .summary p { margin: 5px 0; }
-                        .correct { color: green; font-weight: bold; }
-                        .incorrect { color: red; font-weight: bold; }
-                        .bg-green-100 { background-color: #d1fae5; }
-                        .bg-red-100 { background-color: #fee2e2; }
-                        .text-green-800 { color: #166534; }
-                        .text-red-800 { color: #991b1b; }
-                    </style>
+                    <style>${cssContent}</style>
                 </head>
                 <body>
-                    <h1>Risultati del tuo Quiz</h1>
-                    <div class="summary">
-                        <p><strong>Data:</strong> ${dateString}</p>
-                        <p><strong>Ora:</strong> ${timeString}</p>
-                        <p><strong>Punteggio:</strong> ${this.score} su ${this.answers.length}</p>
-                        <p><strong>Percentuale:</strong> ${this.answers.length > 0 ? Math.round((this.score / this.answers.length) * 100) : 0}%</p>
-                        <p><strong>Tempo impiegato:</strong> ${this.formatTime(this.timeElapsed)}</p>
+                    <div class="container">
+                        <div class="download-summary-card">
+                            <h1 class="text-3xl font-bold mb-4 text-gray-800">Risultati del Quiz</h1>
+                            <div class="text-xl font-semibold mb-2">
+                                Punteggio: <span class="${this.score >= this.answers.length * 0.66 ? 'text-green-700' : 'text-red-700'}">${this.score} su ${this.answers.length} (${Math.round((this.score / this.answers.length) * 100)}%)</span>
+                            </div>
+                            <div class="text-lg">
+                                Tempo impiegato: ${this.formatTime(this.timeElapsed)}
+                            </div>
+                            <div class="text-sm mt-2 text-gray-500">
+                                Data: ${dateString} - Ora: ${timeString}
+                            </div>
+                        </div>
+                        ${resultsHTML}
                     </div>
+                </body>
+                </html>
             `;
 
-            if (this.answers.some(answer => answer.materia)) {
-                const groupedAnswers = this.answers.reduce((acc, answer, index) => {
-                    const materia = answer.materia || 'Generale';
-                    if (!acc[materia]) {
-                        acc[materia] = [];
-                    }
-                    acc[materia].push({ ...answer, originalIndex: index });
-                    return acc;
-                }, {});
-
-                Object.entries(groupedAnswers).forEach(([materia, materiaAnswers]) => {
-                    const correctCount = materiaAnswers.filter(a => a.isCorrect).length;
-                    const totalCount = materiaAnswers.length;
-                    const percentage = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
-                    contentHTML += `<h2>${materia} (${correctCount}/${totalCount})</h2>`;
-                    materiaAnswers.forEach((answer) => {
-                        const isCorrectClass = answer.isCorrect ? 'bg-green-100' : 'bg-red-100';
-                        const textColor = answer.isCorrect ? 'text-green-800' : 'text-red-800';
-                        const correctHtml = answer.isCorrect ? '' : `<div style="color: #166534;">Risposta corretta: ${answer.correctAnswer}</div>`;
-                        contentHTML += `
-                            <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: ${isCorrectClass};">
-                                <h4 style="font-weight: bold; margin-bottom: 5px;">Domanda ${answer.originalIndex + 1}:</h4>
-                                <p style="margin-bottom: 10px;">${answer.question}</p>
-                                <p style="font-weight: bold; color: ${textColor};">La tua risposta: ${answer.selectedAnswer}</p>
-                                ${!answer.isCorrect ? correctHtml : ''}
-                            </div>
-                        `;
-                    });
-                });
-            } else {
-                this.answers.forEach((answer, index) => {
-                    const isCorrectClass = answer.isCorrect ? 'bg-green-100' : 'bg-red-100';
-                    const textColor = answer.isCorrect ? 'text-green-800' : 'text-red-800';
-                    const correctHtml = answer.isCorrect ? '' : `<div style="color: #166534;">Risposta corretta: ${answer.correctAnswer}</div>`;
-                    contentHTML += `
-                        <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: ${isCorrectClass};">
-                            <h4 style="font-weight: bold; margin-bottom: 5px;">Domanda ${index + 1}:</h4>
-                            <p style="margin-bottom: 10px;">${answer.question}</p>
-                            <p style="font-weight: bold; color: ${textColor};">La tua risposta: ${answer.selectedAnswer}</p>
-                            ${!answer.isCorrect ? correctHtml : ''}
-                        </div>
-                    `;
-                });
-            }
-
-            contentHTML += `</body></html>`;
-
-            const blob = new Blob([contentHTML], { type: 'text/html' });
+            const blob = new Blob([htmlContent], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
