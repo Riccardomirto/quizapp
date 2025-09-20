@@ -758,7 +758,7 @@
                 <html lang="it">
                 <head>
                     <meta charset="UTF-8">
-                    <title>Tutte le Domande e Risposte</title>
+                    <title>Tutte le Domande Disponibili</title>
                     <style>
                         body {
                             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -780,7 +780,7 @@
                 </head>
                 <body>
                     <div class="container">
-                        <h1>Tutte le Domande Disponibili</h1>
+                        <h1>Tutte le Domande del Quiz</h1>
                         ${questionsHtml}
                     </div>
                 </body>
@@ -829,7 +829,7 @@
             return `
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title" style="color: #1e40af;">MCB TEST APP - V5.6</h2>
+                        <h2 class="card-title" style="color: #1e40af;">MCB TEST APP - V5.7</h2>
                     </div>
                     <div class="card-content">
                         <div class="space-y-8">
@@ -1220,13 +1220,9 @@
 
             const getAnswerCardHTML = (answer, index) => {
                 const cardClass = answer.isCorrect ? 'download-question-card download-question-card-correct' : 'download-question-card download-question-card-incorrect';
-                const questionNumber = index + 1;
-                const scoreHTML = answer.isCorrect ? `
-                    <div class="text-green-700 font-medium">Risposta Corretta</div>
-                ` : `
-                    <div class="text-red-700 font-medium">Risposta Errata</div>
-                `;
-
+                // Utilizza l'originalIndex per mantenere la numerazione progressiva
+                const questionNumber = answer.originalIndex + 1;
+                
                 return `
                     <div class="${cardClass}">
                         <div class="flex items-center gap-2 mb-2">
@@ -1337,7 +1333,7 @@
             `;
 
             const htmlContent = `
-                <!DOCTYPE html>
+                <!DOCTYPE: html>
                 <html lang="it">
                 <head>
                     <meta charset="UTF-8">
