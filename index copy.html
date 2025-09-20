@@ -227,7 +227,7 @@
             display: flex;
             align-items: flex-start;
             gap: 0.5rem;
-            font-size: 1.125rem; /* Aumentato il font-size per le opzioni */
+            font-size: 1.125rem;
         }
 
         .question-option:hover {
@@ -433,7 +433,6 @@
             this.answerSubmitted = false;
             this.timeElapsed = 0;
             this.answers = [];
-            this.isFileLoaded = false;
             this.error = null;
             this.allQuestions = [];
             this.selectedQuestionCount = null;
@@ -452,17 +451,16 @@
                 const subjects = [...new Set(this.allQuestions.map(q => q.materia).filter(Boolean))];
                 this.availableSubjects = subjects;
                 this.showSubjectSelection = subjects.length > 0;
-                this.isFileLoaded = true;
                 this.render();
             } catch (err) {
-                this.error = `Errore nel caricamento del file domande.csv: ${err.message}`;
-                this.isFileLoaded = false;
+                this.error = `Errore nel caricamento dei dati: ${err.message}`;
                 this.render();
             }
         }
 
         async getQuizData() {
-            const response = await fetch('domande.csv');
+            const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRG1GopTttR5S4ae8X1zNM-MRVEq3UikLN6dq8YkFaUmVz4JbkV0kYukYfldWsah3xM8tiZxoGmHced/pub?gid=906885200&single=true&output=csv';
+            const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`Impossibile caricare il file. Stato: ${response.status}`);
             }
@@ -924,6 +922,7 @@
         }
         
         renderFileUploadPage() {
+            // Questo metodo non viene più chiamato, ma è stato mantenuto come fallback
             return `
                 <h1 class="text-center text-3xl font-bold mb-8 text-gray-800">
                     Carica il documento con le domande e le risposte multiple, ed esegui il Quiz.
@@ -1221,7 +1220,6 @@
 
             const getAnswerCardHTML = (answer, index) => {
                 const cardClass = answer.isCorrect ? 'download-question-card download-question-card-correct' : 'download-question-card download-question-card-incorrect';
-                // Utilizza l'originalIndex per mantenere la numerazione progressiva
                 const questionNumber = answer.originalIndex + 1;
                 
                 return `
@@ -1507,32 +1505,9 @@
         render() {
             const app = document.getElementById('app');
             
-            if (!this.isFileLoaded) {
-                app.innerHTML = this.renderFileUploadPage();
-                document.getElementById('file-upload').addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            try {
-                                this.allQuestions = this.parseQuizData(event.target.result);
-                                const subjects = [...new Set(this.allQuestions.map(q => q.materia).filter(Boolean))];
-                                this.availableSubjects = subjects;
-                                this.showSubjectSelection = subjects.length > 0;
-                                this.isFileLoaded = true;
-                                this.render();
-                            } catch (err) {
-                                this.error = `Errore nel parsing del file: ${err.message}`;
-                                this.isFileLoaded = false;
-                                this.render();
-                            }
-                        };
-                        reader.readAsText(file);
-                    }
-                });
-            } else if (this.isFileLoaded && this.showSubjectSelection) {
+            if (this.showSubjectSelection) {
                 app.innerHTML = this.renderSubjectSelection();
-            } else if (this.isFileLoaded && !this.questions.length && !this.showSubjectSelection) {
+            } else if (this.questions.length === 0 && this.allQuestions.length > 0) {
                 app.innerHTML = this.renderQuestionSelection();
             } else if (this.showResult) {
                 app.innerHTML = this.renderResults();
