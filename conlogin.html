@@ -432,10 +432,10 @@
         </div>
     </div>
 
-    <script>
+<script>
     
     // **********************************************
-    // NUOVO: Funzione di callback globale per Google Sign-In
+    // 1. QUESTO BLOCCO DEVE ESSERE QUI (PRIMA DI TUTTO)
     // **********************************************
     function handleCredentialResponse(response) {
         // Decodifica il JWT per ottenere le informazioni utente
@@ -447,9 +447,9 @@
             window.app.handleSignIn(payload.email); 
         } catch (error) {
             console.error("Errore nella decodifica del token JWT:", error);
-            // Potresti mostrare un errore all'utente qui
         }
     }
+    // **********************************************
     
     class QuizApp {
         constructor() {
@@ -1642,7 +1642,7 @@
             `;
         }
 
-render() {
+  render() {
             const appElement = document.getElementById('app');
             
             if (!this.isUserSignedIn) {
@@ -1652,7 +1652,7 @@ render() {
                 // 2. Tenta di renderizzare il pulsante (una sola volta)
                 const buttonContainer = document.getElementById('google-button-container');
                 
-                // Controlla se l'oggetto di Google è disponibile (dovrebbe esserlo grazie ad async defer)
+                // Controlla se l'oggetto di Google è disponibile (dovrebbe esserlo)
                 if (buttonContainer && window.google && window.google.accounts) {
                     window.google.accounts.id.renderButton(
                         buttonContainer,
@@ -1667,7 +1667,9 @@ render() {
                     );
                 } else if (buttonContainer) {
                     // Fallback di debug: aggiunge un messaggio se la libreria non carica (raro)
-                    buttonContainer.innerHTML = '<div class="text-red-500">Errore: la libreria di Google non è stata caricata. Riprova.</div>';
+                    // Questo dovrebbe apparire solo se la libreria esterna non si è caricata affatto.
+                    // Se appare, è un problema di rete/browser, non di codice.
+                    buttonContainer.innerHTML = '<div class="text-red-500">Impossibile caricare il pulsante Google. Riprova.</div>';
                 }
 
             } else if (this.showSubjectSelection) {
