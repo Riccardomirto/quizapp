@@ -774,9 +774,13 @@
             }
         }
 
+       // **********************************************
+        // sendQuizResultsToSheet ORA INVIA l'email
+        // **********************************************
         async sendQuizResultsToSheet() {
             try {
-                const webAppUrl = 'https://script.google.com/macros/s/AKfycbyByUfgxspeMhU8kBER2_yZcdttnBkDFL1uCOb4N4UqBn7_bs_MFCa353S3YMPa-ARD/exec';
+                // *** ATTENZIONE: Usa l'URL del tuo script *RISULTATI QUIZ* ***
+                const webAppUrl = 'https://script.google.com/macros/s/AKfycbx7S8bvJ_hsGdPf7P5hbkpzRLFLVdvHIeH-HJT7IBKuk6MdeWQTqfwboFN33FDapmdx/exec';
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
                 const ipAddress = ipData.ip || 'N/A';
@@ -825,7 +829,7 @@
                     region: region,
                     country: country,
                     subjects: subjects,
-                    user_email: this.userEmail 
+                    user_email: this.userEmail // NUOVO: Aggiunge l'email dell'utente
                 });
 
                 const logResponse = await fetch(webAppUrl, {
