@@ -1641,15 +1641,17 @@
             `;
         }
 
- render() {
+render() {
             const appElement = document.getElementById('app');
-            const wasLoginScreen = appElement.innerHTML.includes('google-button-container'); // Check if login screen was already rendered
             
             if (!this.isUserSignedIn) {
+                // 1. Mostra la schermata di login
                 appElement.innerHTML = this.renderLoginPage();
                 
-                // NUOVO: Forziamo il rendering del pulsante solo dopo che l'HTML è nel DOM
+                // 2. Tenta di renderizzare il pulsante (una sola volta)
                 const buttonContainer = document.getElementById('google-button-container');
+                
+                // Controlla se l'oggetto di Google è disponibile (dovrebbe esserlo grazie ad async defer)
                 if (buttonContainer && window.google && window.google.accounts) {
                     window.google.accounts.id.renderButton(
                         buttonContainer,
@@ -1662,10 +1664,9 @@
                             logo_alignment: "left"
                         } // customization attributes
                     );
-                } else if (!wasLoginScreen) {
-                    // Se non ci sono i servizi Google immediatamente disponibili (es. primo caricamento), 
-                    // possiamo usare un piccolo timeout per dare tempo alla libreria di caricarsi
-                    setTimeout(() => this.render(), 100); 
+                } else if (buttonContainer) {
+                    // Fallback di debug: aggiunge un messaggio se la libreria non carica (raro)
+                    buttonContainer.innerHTML = '<div class="text-red-500">Errore: la libreria di Google non è stata caricata. Riprova.</div>';
                 }
 
             } else if (this.showSubjectSelection) {
@@ -1678,7 +1679,6 @@
                 appElement.innerHTML = this.renderQuiz();
             }
         }
-
     const app = new QuizApp();
     // Lo rendiamo globale per la funzione handleCredentialResponse
     window.app = app; 
