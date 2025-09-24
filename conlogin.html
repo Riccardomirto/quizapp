@@ -1680,9 +1680,30 @@ render() {
                 appElement.innerHTML = this.renderQuiz();
             }
         }
-    const app = new QuizApp();
-    // Lo rendiamo globale per la funzione handleCredentialResponse
-    window.app = app; 
+// ***************************************************************
+// NUOVA FINE DEL TAG <script> CON CARICAMENTO RITARDATO
+// ***************************************************************
+
+    // 1. Definiamo la funzione di callback in modo che Google possa trovarla (OK)
+    function handleCredentialResponse(response) {
+        // ... (il tuo codice per gestire la risposta è corretto)
+        try {
+            const token = response.credential;
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            
+            window.app.handleSignIn(payload.email); 
+        } catch (error) {
+            console.error("Errore nella decodifica del token JWT:", error);
+        }
+    }
+
+    // 2. Aggiungiamo un listener per eseguire l'inizializzazione solo quando la pagina è pronta.
+    // Questo risolve l'errore "Unexpected identifier 'app'"
+    document.addEventListener('DOMContentLoaded', () => {
+        const app = new QuizApp();
+        // Rendi l'istanza globale per la funzione di callback (necessario)
+        window.app = app; 
+    });
 </script>
 </body>
 </html>
