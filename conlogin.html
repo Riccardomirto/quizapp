@@ -432,11 +432,12 @@
         </div>
     </div>
 
-<script>
+    <script>
     
-    // **********************************************
-    // 1. QUESTO BLOCCO DEVE ESSERE QUI (PRIMA DI TUTTO)
-    // **********************************************
+    // ******************************************************
+    // 1. FUNZIONE DI CALLBACK GLOBALE (DEVE ESSERE QUI)
+    // Questo risolve l'errore 'callback is not a function'
+    // ******************************************************
     function handleCredentialResponse(response) {
         // Decodifica il JWT per ottenere le informazioni utente
         try {
@@ -447,10 +448,13 @@
             window.app.handleSignIn(payload.email); 
         } catch (error) {
             console.error("Errore nella decodifica del token JWT:", error);
+            // Non fare nulla, l'utente rimarrà nella schermata di login con un errore console.
         }
     }
-    // **********************************************
     
+    // ******************************************************
+    // 2. CLASSE PRINCIPALE QUI
+    // ******************************************************
     class QuizApp {
         constructor() {
             this.questions = [];
@@ -468,8 +472,8 @@
             this.availableSubjects = [];
             this.showSubjectSelection = false;
             this.timer = null;
-            this.userEmail = null; // NUOVO: Email dell'utente loggato
-            this.isUserSignedIn = false; // NUOVO: Stato di login
+            this.userEmail = null; 
+            this.isUserSignedIn = false; 
             
             // ************ URL SCRIPT PER IL LOG DI ACCESSO ************
             this.logWebAppUrl = 'https://script.google.com/macros/s/AKfycbzibnsT68m_d0jM2_RStE-VB0s6onQmwggsys36er79DhBdTVZy2JjV4ynvFOrjBG9C8Q/exec';
@@ -478,30 +482,23 @@
             this.init();
         }
 
-     async init() {
+        async init() {
             let subjects = [];
             try {
-                // 1. Tenta di caricare i dati
                 const quizData = await this.getQuizData();
                 this.allQuestions = this.parseQuizData(quizData);
                 subjects = [...new Set(this.allQuestions.map(q => q.materia).filter(Boolean))];
                 this.availableSubjects = subjects;
                 
-                // Se il caricamento riesce, il resto della logica si basa sul login (gestito in render())
-                
             } catch (err) {
-                // 2. Se il caricamento fallisce, imposta un errore
-                this.error = `Errore nel caricamento dei dati: ${err.message}. L'accesso con Google potrebbe comunque funzionare.`;
-                // Continua, in modo che la schermata di login possa essere renderizzata
+                // Gestione robusta degli errori in init()
+                this.error = `Errore nel caricamento dei dati: ${err.message}. L'app potrebbe avviarsi senza dati.`;
             }
             
-            // 3. Forziamo il primo render
+            // Forziamo il primo render DOPO aver caricato i dati (o fallito)
             this.render();
         }
         
-        // **********************************************
-        // NUOVO: Gestore del successo del login
-        // **********************************************
         handleSignIn(email) {
             this.userEmail = email;
             this.isUserSignedIn = true;
@@ -601,7 +598,6 @@
                 return;
             }
             
-            // MODIFICATO: Passa l'email dell'utente
             this.logAppAccess(this.selectedSubjects, this.userEmail);
 
             const shuffledQuestions = this.shuffleArray([...filteredQuestions]);
@@ -708,9 +704,6 @@
             this.render();
         }
         
-        // **********************************************
-        // MODIFICATO: logAppAccess ora accetta l'email
-        // **********************************************
         async logAppAccess(selectedSubjects, userEmail) {
             try {
                 if (!this.logWebAppUrl) {
@@ -718,19 +711,16 @@
                     return;
                 }
                 
-                // 1. Raccogli indirizzo IP
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
                 const ipAddress = ipData.ip || 'N/A';
 
-                // 2. Raccogli geolocalizzazione (usa l'IP raccolto)
                 const geoResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
                 const geoData = await geoResponse.json();
                 const city = geoData.city || 'N/A';
                 const region = geoData.region || 'N/A';
                 const country = geoData.country_name || 'N/A';
 
-                // 3. Raccogli Browser/OS
                 const userAgent = navigator.userAgent;
                 let browserName = "Sconosciuto";
                 let os = "Sconosciuto";
@@ -757,7 +747,6 @@
                     os = "iOS";
                 }
                 
-                // 4. Prepara il payload (Aggiungendo le materie e l'email)
                 const payload = new URLSearchParams({
                     ip_address: ipAddress,
                     browser: browserName,
@@ -766,10 +755,9 @@
                     region: region,
                     country: country,
                     subjects: selectedSubjects.join(', '),
-                    user_email: userEmail // Aggiunge l'email dell'utente
+                    user_email: userEmail 
                 });
 
-                // 5. Invia al NUOVO script di log
                 const logResponse = await fetch(this.logWebAppUrl, {
                     method: 'POST',
                     body: payload.toString(),
@@ -785,11 +773,7 @@
                 console.error('Errore durante l\'invio del log di accesso:', error);
             }
         }
-        // **********************************************
 
-        // **********************************************
-        // MODIFICATO: sendQuizResultsToSheet ora usa l'email
-        // **********************************************
         async sendQuizResultsToSheet() {
             try {
                 const webAppUrl = 'https://script.google.com/macros/s/AKfycbyByUfgxspeMhU8kBER2_yZcdttnBkDFL1uCOb4N4UqBn7_bs_MFCa353S3YMPa-ARD/exec';
@@ -841,7 +825,7 @@
                     region: region,
                     country: country,
                     subjects: subjects,
-                    user_email: this.userEmail // Aggiunge l'email dell'utente
+                    user_email: this.userEmail 
                 });
 
                 const logResponse = await fetch(webAppUrl, {
@@ -859,7 +843,6 @@
                 console.error('Errore durante l\'invio dei dati:', error);
             }
         }
-        // **********************************************
         
         handleShowAllQuestions() {
             let newWindow = window.open('', '_blank');
@@ -929,9 +912,6 @@
             newWindow.document.close();
         }
         
-      // **********************************************
-        // MODIFICATO: Schermata di Login con contenitore pulsante
-        // **********************************************
         renderLoginPage() {
             return `
                 <div class="card" style="margin-top: 4rem;">
@@ -961,7 +941,6 @@
                 </div>
             `;
         }
-        // **********************************************
 
         renderSubjectSelection() {
             const simulationBustaSubjects = this.availableSubjects.filter(subject => 
@@ -1097,10 +1076,6 @@
             `;
         }
         
-        // **********************************************
-        // RIMOSSO: renderFileUploadPage (non più utilizzato)
-        // **********************************************
-
         renderQuestionSelection() {
             let availableQuestions = this.allQuestions;
             if (this.availableSubjects.length > 0 && this.selectedSubjects.length > 0) {
@@ -1642,17 +1617,14 @@
             `;
         }
 
-  render() {
+        render() {
             const appElement = document.getElementById('app');
             
             if (!this.isUserSignedIn) {
-                // 1. Mostra la schermata di login
                 appElement.innerHTML = this.renderLoginPage();
                 
-                // 2. Tenta di renderizzare il pulsante (una sola volta)
                 const buttonContainer = document.getElementById('google-button-container');
                 
-                // Controlla se l'oggetto di Google è disponibile (dovrebbe esserlo)
                 if (buttonContainer && window.google && window.google.accounts) {
                     window.google.accounts.id.renderButton(
                         buttonContainer,
@@ -1663,12 +1635,9 @@
                             text: "signin_with",
                             shape: "rectangular", 
                             logo_alignment: "left"
-                        } // customization attributes
+                        } 
                     );
                 } else if (buttonContainer) {
-                    // Fallback di debug: aggiunge un messaggio se la libreria non carica (raro)
-                    // Questo dovrebbe apparire solo se la libreria esterna non si è caricata affatto.
-                    // Se appare, è un problema di rete/browser, non di codice.
                     buttonContainer.innerHTML = '<div class="text-red-500">Impossibile caricare il pulsante Google. Riprova.</div>';
                 }
 
@@ -1682,30 +1651,13 @@
                 appElement.innerHTML = this.renderQuiz();
             }
         }
-// ***************************************************************
-// NUOVA FINE DEL TAG <script> CON CARICAMENTO RITARDATO
-// ***************************************************************
-
-    // 1. Definiamo la funzione di callback in modo che Google possa trovarla (OK)
-    function handleCredentialResponse(response) {
-        // ... (il tuo codice per gestire la risposta è corretto)
-        try {
-            const token = response.credential;
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            
-            window.app.handleSignIn(payload.email); 
-        } catch (error) {
-            console.error("Errore nella decodifica del token JWT:", error);
-        }
     }
 
-    // 2. Aggiungiamo un listener per eseguire l'inizializzazione solo quando la pagina è pronta.
-    // Questo risolve l'errore "Unexpected identifier 'app'"
-    document.addEventListener('DOMContentLoaded', () => {
-        const app = new QuizApp();
-        // Rendi l'istanza globale per la funzione di callback (necessario)
-        window.app = app; 
-    });
+    // ******************************************************
+    // 3. INIZIALIZZAZIONE FINALE (DEVE ESSERE QUI)
+    // ******************************************************
+    const app = new QuizApp();
+    window.app = app; 
 </script>
 </body>
 </html>
