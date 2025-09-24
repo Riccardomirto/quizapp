@@ -478,24 +478,25 @@
             this.init();
         }
 
-        async init() {
+     async init() {
+            let subjects = [];
             try {
+                // 1. Tenta di caricare i dati
                 const quizData = await this.getQuizData();
                 this.allQuestions = this.parseQuizData(quizData);
-                const subjects = [...new Set(this.allQuestions.map(q => q.materia).filter(Boolean))];
+                subjects = [...new Set(this.allQuestions.map(q => q.materia).filter(Boolean))];
                 this.availableSubjects = subjects;
                 
-                // MODIFICATO: Inizia mostrando la schermata di login se l'utente non è loggato
-                if (!this.isUserSignedIn) {
-                    this.render(); 
-                } else {
-                    this.showSubjectSelection = subjects.length > 0;
-                    this.render();
-                }
+                // Se il caricamento riesce, il resto della logica si basa sul login (gestito in render())
+                
             } catch (err) {
-                this.error = `Errore nel caricamento dei dati: ${err.message}`;
-                this.render();
+                // 2. Se il caricamento fallisce, imposta un errore
+                this.error = `Errore nel caricamento dei dati: ${err.message}. L'accesso con Google potrebbe comunque funzionare.`;
+                // Continua, in modo che la schermata di login possa essere renderizzata
             }
+            
+            // 3. Forziamo il primo render
+            this.render();
         }
         
         // **********************************************
