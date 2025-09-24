@@ -440,12 +440,18 @@
             this.availableSubjects = [];
             this.showSubjectSelection = false;
             this.timer = null;
+            // ************ NUOVA URL SCRIPT PER IL LOG DI ACCESSO ************
+            this.logWebAppUrl = 'https://script.google.com/macros/s/AKfycbwMDlbdDsChvxiZ0h25KDew2XpPUc63zFLXzwY2uN78EpotAklZVfRg7c7q48MRLCNB/exec';
+            // ***************************************************************
             
             this.init();
         }
 
         async init() {
             try {
+                // Chiama la funzione di log all'avvio dell'applicazione
+                this.logAppAccess(); 
+
                 const quizData = await this.getQuizData();
                 this.allQuestions = this.parseQuizData(quizData);
                 const subjects = [...new Set(this.allQuestions.map(q => q.materia).filter(Boolean))];
@@ -653,6 +659,83 @@
             this.render();
         }
         
+        // **********************************************
+        // NUOVA FUNZIONE PER LOGGARE L'ACCESSO ALL'APP
+        // **********************************************
+        async logAppAccess() {
+            try {
+                if (!this.logWebAppUrl) {
+                    console.warn('URL dello script di log non configurato. Salto il log di accesso.');
+                    return;
+                }
+                
+                // 1. Raccogli indirizzo IP
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const ipAddress = ipData.ip || 'N/A';
+
+                // 2. Raccogli geolocalizzazione (usa l'IP raccolto)
+                const geoResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
+                const geoData = await geoResponse.json();
+                const city = geoData.city || 'N/A';
+                const region = geoData.region || 'N/A';
+                const country = geoData.country_name || 'N/A';
+
+                // 3. Raccogli Browser/OS
+                const userAgent = navigator.userAgent;
+                let browserName = "Sconosciuto";
+                let os = "Sconosciuto";
+
+                if (userAgent.includes("Firefox")) {
+                    browserName = "Firefox";
+                } else if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+                    browserName = "Chrome";
+                } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+                    browserName = "Safari";
+                } else if (userAgent.includes("Edg")) {
+                    browserName = "Edge";
+                }
+
+                if (userAgent.includes("Mac")) {
+                    os = "macOS";
+                } else if (userAgent.includes("Windows")) {
+                    os = "Windows";
+                } else if (userAgent.includes("Android")) {
+                    os = "Android";
+                } else if (userAgent.includes("Linux")) {
+                    os = "Linux";
+                } else if (userAgent.includes("iPhone") || userAgent.includes("iPad")) {
+                    os = "iOS";
+                }
+                
+                // 4. Prepara il payload
+                const payload = new URLSearchParams({
+                    ip_address: ipAddress,
+                    browser: browserName,
+                    os: os,
+                    city: city,
+                    region: region,
+                    country: country,
+                });
+
+                // 5. Invia al NUOVO script di log
+                const logResponse = await fetch(this.logWebAppUrl, {
+                    method: 'POST',
+                    body: payload.toString(),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await logResponse.json();
+                console.log('Accesso App loggato con successo:', result);
+
+            } catch (error) {
+                console.error('Errore durante l\'invio del log di accesso:', error);
+            }
+        }
+        // **********************************************
+
         async sendQuizResultsToSheet() {
             try {
                 const webAppUrl = 'https://script.google.com/macros/s/AKfycbyByUfgxspeMhU8kBER2_yZcdttnBkDFL1uCOb4N4UqBn7_bs_MFCa353S3YMPa-ARD/exec';
@@ -828,13 +911,13 @@
             return `
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title" style="color: #1e40af;">MCB TEST APP - V5.7</h2>
+                        <h2 class="card-title" style="color: #1e40af;">MCB TEST APP - V6.1</h2>
                     </div>
                     <div class="card-content">
                         <div class="space-y-8">
                             <div class="text-center">
                                 <div class="text-gray-600">
-                                    Scegli le Buste Simulazione Esame e le Materie da includere nel Quiz poi premi il pulsante in fondo alla pagina per procedere.
+                                    Scegli le Simulazioni e le Materie da includere nel Quiz poi premi il pulsante in fondo alla pagina per scegliere il numero di domande.
                                 </div>
                             </div>
                             
@@ -1026,7 +1109,10 @@
                                 </div>
                                 
                                 <p class="text-gray-600 mb-6">
-                                    Seleziona quante domande vuoi nel test (verranno scelte casualmente):
+                                    Seleziona quante domande vuoi nel Quiz, verranno scelte e ordinate casualmente.
+                                </p>
+                                   <p class="text-gray-600 mb-6">
+                                    Potrai comunque interrompere il Quiz quando vuoi.
                                 </p>
                             </div>
                             
@@ -1381,9 +1467,9 @@
                         <div class="flex justify-between items-center">
                             <h2 class="card-title">Domanda ${this.currentQuestion + 1} di ${this.questions.length}</h2>
                             <div>
-                                <button class="btn btn-outline" onclick="app.showResult = true; app.stopTimer(); app.render();">
+                                <button class="btn btn-danger" onclick="app.showResult = true; app.stopTimer(); app.render();">
                                     Termina
-                                </button>
+                                </button>                                
                             </div>
                         </div>
                     </div>
