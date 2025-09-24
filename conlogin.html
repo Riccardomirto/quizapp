@@ -928,8 +928,8 @@
             newWindow.document.close();
         }
         
-        // **********************************************
-        // NUOVO: Schermata di Login
+      // **********************************************
+        // MODIFICATO: Schermata di Login con contenitore pulsante
         // **********************************************
         renderLoginPage() {
             return `
@@ -944,15 +944,7 @@
                             </div>
                             
                             <div class="flex justify-center mt-6">
-                                <div id="g_id_signin" 
-                                     class="g_id_signin" 
-                                     data-type="standard" 
-                                     data-size="large" 
-                                     data-theme="outline" 
-                                     data-text="signin_with" 
-                                     data-shape="rectangular" 
-                                     data-logo_alignment="left">
-                                </div>
+                                <div id="google-button-container"></div>
                             </div>
 
                             ${this.error ? `
