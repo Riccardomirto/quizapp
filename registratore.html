@@ -11,306 +11,343 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
-        .animate-pulse-slow {
-            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .7; }
+        .disabled-button {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="h-full bg-gray-900 text-white flex items-center justify-center p-4">
-    <div id="app" class="w-full max-w-md mx-auto text-center">
-        <!-- Initial State -->
-        <div id="initial-state" class="space-y-8">
-            <h1 class="text-3xl font-bold text-gray-200">Registratore Note Audio MP3</h1>
-            <p class="text-gray-400">Clicca sul microfono per iniziare a registrare la tua nota vocale.</p>
-            <button id="start-button" aria-label="Inizia registrazione" class="mx-auto w-24 h-24 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 shadow-lg">
-                <div id="mic-icon">
-                    <svg class="w-12 h-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 016 0v8.25a3 3 0 01-3 3z" />
-                    </svg>
-                </div>
-            </button>
-            <p id="permission-error" class="text-red-400 hidden">L'autorizzazione al microfono è necessaria per registrare.</p>
-        </div>
+    <div class="w-full max-w-md mx-auto bg-gray-800 rounded-2xl shadow-lg p-6 space-y-6">
+        <header class="text-center">
+            <h1 class="text-2xl font-bold text-white">Registratore Note Audio</h1>
+            <p class="text-gray-400">Registra, ascolta e scarica le tue note in MP3.</p>
+        </header>
 
-        <!-- Recording State -->
-        <div id="recording-state" class="hidden space-y-8">
-            <h1 class="text-3xl font-bold text-gray-200">Registrazione in corso...</h1>
-            <div class="text-5xl font-mono text-red-400 animate-pulse-slow" id="timer">00:00</div>
-            <button id="stop-button" aria-label="Ferma registrazione" class="mx-auto w-24 h-24 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-gray-500 focus:ring-opacity-50 shadow-lg">
-                <div id="stop-icon">
-                    <svg class="w-10 h-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                       <path d="M6 6h12v12H6z" />
-                    </svg>
-                </div>
-            </button>
-        </div>
-
-        <!-- Loading State -->
-        <div id="loading-state" class="hidden space-y-6">
-            <h1 class="text-3xl font-bold text-gray-200">Elaborazione in corso...</h1>
-            <p class="text-gray-400">Sto convertendo la tua nota in MP3.</p>
-             <div class="w-16 h-16 mx-auto border-4 border-dashed rounded-full animate-spin border-sky-400"></div>
-        </div>
-
-        <!-- Finished State -->
-        <div id="finished-state" class="hidden space-y-6">
-            <h1 class="text-2xl font-bold text-gray-200">Registrazione Completata</h1>
-            
-            <div id="disabled-mic-container" class="my-6">
-                 <button id="disabled-start-button" aria-label="Registrazione disabilitata" disabled class="mx-auto w-24 h-24 bg-red-800 rounded-full flex items-center justify-center cursor-not-allowed opacity-50 shadow-lg">
-                    <div id="disabled-mic-icon">
-                         <svg class="w-12 h-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 016 0v8.25a3 3 0 01-3 3z" />
+        <main id="app-container" class="space-y-6">
+            <!-- Stato Iniziale e Registrazione -->
+            <div id="recorder-view" class="text-center space-y-4">
+                <button id="recordButton" class="w-24 h-24 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center mx-auto transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 focus:ring-offset-gray-800">
+                    <div id="mic-icon">
+                        <svg class="w-10 h-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5a6 6 0 00-12 0v1.5a6 6 0 006 6z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5" />
+                        </svg>
+                    </div>
+                    <div id="stop-icon" class="hidden">
+                         <svg class="w-10 h-10 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.5 7.5a3 3 0 013-3h9a3 3 0 013 3v9a3 3 0 01-3 3h-9a3 3 0 01-3-3v-9z" clip-rule="evenodd" />
                         </svg>
                     </div>
                 </button>
+                <div id="timer" class="text-2xl font-mono text-gray-300">00:00</div>
+                <div id="status-text" class="text-gray-400 h-5">Clicca per registrare</div>
             </div>
             
-            <div class="bg-gray-800 rounded-lg p-4 w-full">
-                <audio id="audio-player" class="w-full hidden"></audio>
-                <div class="flex items-center space-x-4">
-                    <button id="play-pause-button" class="p-2 rounded-full bg-sky-500 hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-400">
-                        <div id="play-icon">
-                            <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <!-- Stato Finale: Player e Download -->
+            <div id="player-view" class="hidden space-y-4">
+                 <div class="bg-gray-700 p-4 rounded-lg space-y-3">
+                     <div class="flex items-center gap-4">
+                        <button id="playPauseButton" class="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-gray-800">
+                            <div id="play-icon">
+                                <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.647c1.295.742 1.295 2.545 0 3.286L7.279 20.99c-1.25.717-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div id="pause-icon" class="hidden">
+                                <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75h-1.5a.75.75 0 01-.75-.75V5.25z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </button>
+                        <div class="flex-grow">
+                             <input type="range" id="progressBar" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" value="0" min="0" max="100">
                         </div>
-                        <div id="pause-icon" class="hidden">
-                            <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                        </div>
+                        <div id="duration" class="text-sm font-mono text-gray-300">00:00</div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center gap-4">
+                    <a id="downloadButton" href="#" class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-gray-800">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 1.5a.75.75 0 01.75.75V11.25l1.22-1.22a.75.75 0 011.06 1.06l-2.5 2.5a.75.75 0 01-1.06 0l-2.5-2.5a.75.75 0 111.06-1.06l1.22 1.22V2.25A.75.75 0 0112 1.5zM2.25 12a.75.75 0 01.75.75v6c0 .414.336.75.75.75h15a.75.75 0 00.75-.75v-6a.75.75 0 011.5 0v6A2.25 2.25 0 0119.5 21H4.5A2.25 2.25 0 012.25 18.75v-6a.75.75 0 01.75-.75z" />
+                        </svg>
+                        Scarica Registrazione
+                    </a>
+                    <button id="newRecordingButton" class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-lg hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 focus:ring-offset-gray-800">
+                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991-2.695v-2.257a2.25 2.25 0 00-2.25-2.25H10.5a2.25 2.25 0 00-2.25 2.25v2.257m1.5-10.23l-3.182 3.182a8.25 8.25 0 000 11.667l3.182 3.182" />
+                         </svg>
+                         Nuova Registrazione
                     </button>
-                    <div class="flex-grow flex items-center space-x-2">
-                        <span id="current-time" class="text-sm font-mono text-gray-400">00:00</span>
-                        <input type="range" id="progress-bar" value="0" class="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer range-sm accent-sky-500" />
-                        <span id="duration" class="text-sm font-mono text-gray-400">00:00</span>
-                    </div>
                 </div>
             </div>
-
-            <div class="flex justify-center space-x-4 pt-4">
-                <button id="download-button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-gray-900">
-                     <div id="download-icon">
-                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                        </svg>
-                    </div>
-                    Scarica MP3
-                </button>
-                <button id="new-recording-button" class="inline-flex items-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 focus:ring-offset-gray-900">
-                     <div id="refresh-icon">
-                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.18-3.185m-7.5 0v-4.992m0 0h4.992M9.75 21.75l3.182-3.182a8.25 8.25 0 000-11.664L9.75 3.75m0 0L6.568 7.086m3.182-3.336H6.568" />
-                        </svg>
-                    </div>
-                    Nuova Registrazione
-                </button>
-            </div>
-        </div>
+        </main>
     </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const AppState = {
-            INITIAL: 'initial',
-            RECORDING: 'recording',
-            LOADING: 'loading',
-            FINISHED: 'finished',
+    <script>
+        const STATES = {
+            IDLE: 'IDLE',
+            RECORDING: 'RECORDING',
+            PROCESSING: 'PROCESSING',
+            FINISHED: 'FINISHED',
         };
 
-        const initialStateDiv = document.getElementById('initial-state');
-        const recordingStateDiv = document.getElementById('recording-state');
-        const loadingStateDiv = document.getElementById('loading-state');
-        const finishedStateDiv = document.getElementById('finished-state');
-
-        const startButton = document.getElementById('start-button');
-        const stopButton = document.getElementById('stop-button');
-        const downloadButton = document.getElementById('download-button');
-        const newRecordingButton = document.getElementById('new-recording-button');
-        const timerDisplay = document.getElementById('timer');
-        const permissionError = document.getElementById('permission-error');
-
-        const audioPlayer = document.getElementById('audio-player');
-        const playPauseButton = document.getElementById('play-pause-button');
-        const playIcon = document.getElementById('play-icon');
-        const pauseIcon = document.getElementById('pause-icon');
-        const progressBar = document.getElementById('progress-bar');
-        const currentTimeDisplay = document.getElementById('current-time');
-        const durationDisplay = document.getElementById('duration');
-
+        let currentState = STATES.IDLE;
         let mediaRecorder;
         let audioChunks = [];
-        let audioUrl = null;
         let timerInterval;
+        let mp3Url = null;
 
-        const setState = (state) => {
-            initialStateDiv.classList.toggle('hidden', state !== AppState.INITIAL);
-            recordingStateDiv.classList.toggle('hidden', state !== AppState.RECORDING);
-            loadingStateDiv.classList.toggle('hidden', state !== AppState.LOADING);
-            finishedStateDiv.classList.toggle('hidden', state !== AppState.FINISHED);
+        // Elementi UI
+        const recordButton = document.getElementById('recordButton');
+        const timerEl = document.getElementById('timer');
+        const statusTextEl = document.getElementById('status-text');
+        const recorderView = document.getElementById('recorder-view');
+        const playerView = document.getElementById('player-view');
+        const audioPlayer = new Audio();
+        const playPauseButton = document.getElementById('playPauseButton');
+        const progressBar = document.getElementById('progressBar');
+        const durationEl = document.getElementById('duration');
+        const downloadButton = document.getElementById('downloadButton');
+        const newRecordingButton = document.getElementById('newRecordingButton');
+        
+        const micIcon = document.getElementById('mic-icon');
+        const stopIcon = document.getElementById('stop-icon');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+
+
+        // Funzione per aggiornare l'UI in base allo stato
+        const updateUI = (state) => {
+            currentState = state;
+            
+            // Reset
+            recorderView.classList.add('hidden');
+            playerView.classList.add('hidden');
+            recordButton.classList.remove('disabled-button');
+            statusTextEl.textContent = '';
+            micIcon.classList.remove('hidden');
+            stopIcon.classList.add('hidden');
+
+
+            if (state === STATES.IDLE) {
+                recorderView.classList.remove('hidden');
+                timerEl.textContent = '00:00';
+                statusTextEl.textContent = 'Clicca per registrare';
+            } else if (state === STATES.RECORDING) {
+                recorderView.classList.remove('hidden');
+                micIcon.classList.add('hidden');
+                stopIcon.classList.remove('hidden');
+                statusTextEl.textContent = 'Registrazione in corso...';
+            } else if (state === STATES.PROCESSING) {
+                recorderView.classList.remove('hidden');
+                recordButton.classList.add('disabled-button');
+                statusTextEl.textContent = 'Elaborazione audio...';
+            } else if (state === STATES.FINISHED) {
+                playerView.classList.remove('hidden');
+                recorderView.classList.remove('hidden'); // Mostra anche la vista del registratore
+                recordButton.classList.add('disabled-button'); // Disabilita il pulsante
+                statusTextEl.textContent = 'Registrazione completata';
+
+                audioPlayer.src = mp3Url;
+                downloadButton.href = mp3Url;
+                downloadButton.download = `registrazione-${new Date().toISOString().slice(0,19).replace('T', '_').replace(/:/g, '-')}.mp3`;
+            }
         };
 
-        const formatTime = (seconds) => {
-            const minutes = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        };
-
+        // Gestione Timer
         const startTimer = () => {
             let seconds = 0;
-            timerDisplay.textContent = formatTime(0);
             timerInterval = setInterval(() => {
                 seconds++;
-                timerDisplay.textContent = formatTime(seconds);
+                const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                timerEl.textContent = `${minutes}:${secs}`;
             }, 1000);
         };
 
         const stopTimer = () => {
             clearInterval(timerInterval);
         };
-
+        
+        // Funzione per scegliere il MIME type
         const getSupportedMimeType = () => {
-            const mimeTypes = ['audio/mp4', 'audio/webm', 'audio/ogg', 'audio/wav'];
-            for (const mimeType of mimeTypes) {
-                if (MediaRecorder.isTypeSupported(mimeType)) {
-                    return mimeType;
+            const types = ['audio/mp4', 'audio/webm'];
+            for (const type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return type;
                 }
             }
             return null;
         };
 
-        const startRecording = async () => {
-            try {
-                permissionError.classList.add('hidden');
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const mimeType = getSupportedMimeType();
-                if (!mimeType) {
-                    alert('Nessun formato di registrazione audio supportato dal tuo browser.');
-                    return;
-                }
 
+        // Logica di registrazione
+        const startRecording = async () => {
+            if (currentState !== STATES.IDLE) return;
+
+            const mimeType = getSupportedMimeType();
+            if (!mimeType) {
+                alert('Il tuo browser non supporta nessun formato di registrazione audio adatto.');
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioChunks = [];
                 mediaRecorder = new MediaRecorder(stream, { mimeType });
+
                 mediaRecorder.ondataavailable = event => {
                     audioChunks.push(event.data);
                 };
-                mediaRecorder.onstop = processAudio;
-                audioChunks = [];
+
+                mediaRecorder.onstop = async () => {
+                    updateUI(STATES.PROCESSING);
+                    const audioBlob = new Blob(audioChunks, { type: mimeType });
+                    
+                    try {
+                        const mp3Blob = await convertToMp3(audioBlob);
+                        mp3Url = URL.createObjectURL(mp3Blob);
+                        updateUI(STATES.FINISHED);
+                    } catch(e) {
+                        console.error("Errore durante la conversione in MP3:", e);
+                        alert("Si è verificato un errore durante la conversione dell'audio. Riprova.");
+                        resetApp();
+                    }
+                };
+
                 mediaRecorder.start();
-                setState(AppState.RECORDING);
                 startTimer();
-            } catch (error) {
-                console.error("Errore nell'accesso al microfono:", error);
-                permissionError.classList.remove('hidden');
+                updateUI(STATES.RECORDING);
+
+            } catch (err) {
+                console.error("Errore nell'accesso al microfono:", err);
+                alert("Non è stato possibile accedere al microfono. Assicurati di aver dato i permessi necessari.");
+                updateUI(STATES.IDLE);
             }
         };
 
         const stopRecording = () => {
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-                stopTimer();
-                setState(AppState.LOADING);
-            }
+            if (currentState !== STATES.RECORDING || !mediaRecorder) return;
+            mediaRecorder.stop();
+            stopTimer();
+            // Ferma anche le tracce del microfono per spegnere l'indicatore
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
         };
         
-        const processAudio = async () => {
-            const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-            
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const arrayBuffer = await audioBlob.arrayBuffer();
-                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                
-                const mp3encoder = new lamejs.Mp3Encoder(1, audioBuffer.sampleRate, 128); // Canale mono, 128kbps
-                const samples = audioBuffer.getChannelData(0);
-                
-                const samplesInt16 = new Int16Array(samples.length);
-                for (let i = 0; i < samples.length; i++) {
-                    const sample = Math.max(-1, Math.min(1, samples[i]));
-                    samplesInt16[i] = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
-                }
-                
-                const mp3Data = [];
-                const sampleBlockSize = 1152;
-                for (let i = 0; i < samplesInt16.length; i += sampleBlockSize) {
-                    const sampleChunk = samplesInt16.subarray(i, i + sampleBlockSize);
-                    const mp3buf = mp3encoder.encodeBuffer(sampleChunk);
-                    if (mp3buf.length > 0) {
-                        mp3Data.push(new Int8Array(mp3buf));
-                    }
-                }
-                const mp3buf = mp3encoder.flush();
-                if (mp3buf.length > 0) {
-                    mp3Data.push(new Int8Array(mp3buf));
-                }
+        // Conversione a MP3
+        const convertToMp3 = (audioBlob) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    audioContext.decodeAudioData(event.target.result, (buffer) => {
+                        const mp3encoder = new lamejs.Mp3Encoder(1, buffer.sampleRate, 128); // 1 canale, sample rate, 128kbps
+                        const pcmData = buffer.getChannelData(0);
 
-                const mp3Blob = new Blob(mp3Data, { type: 'audio/mpeg' });
-                audioUrl = URL.createObjectURL(mp3Blob);
+                        // LAME.js si aspetta campioni a 16-bit, non Float32
+                        const samples = new Int16Array(pcmData.length);
+                        for (let i = 0; i < pcmData.length; i++) {
+                            samples[i] = pcmData[i] * 32767.5;
+                        }
 
-                audioPlayer.src = audioUrl;
-                downloadButton.href = audioUrl;
-                downloadButton.download = `nota-audio-${new Date().toISOString()}.mp3`;
-                
-                setState(AppState.FINISHED);
-            } catch (error) {
-                console.error('Errore durante la codifica MP3:', error);
-                alert("Si è verificato un errore durante l'elaborazione dell'audio. Riprova.");
-                resetApp();
-            }
+                        const mp3Data = [];
+                        const sampleBlockSize = 1152;
+                        for (let i = 0; i < samples.length; i += sampleBlockSize) {
+                            const sampleChunk = samples.subarray(i, i + sampleBlockSize);
+                            const mp3buf = mp3encoder.encodeBuffer(sampleChunk);
+                            if (mp3buf.length > 0) {
+                                mp3Data.push(new Int8Array(mp3buf));
+                            }
+                        }
+                        const mp3buf = mp3encoder.flush();
+                        if (mp3buf.length > 0) {
+                            mp3Data.push(new Int8Array(mp3buf));
+                        }
+                        
+                        const blob = new Blob(mp3Data, {type: 'audio/mp3'});
+                        resolve(blob);
+
+                    }, (error) => {
+                         console.error('decodeAudioData error', error);
+                         reject(error);
+                    });
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(audioBlob);
+            });
         };
 
-        const resetApp = () => {
-            if (audioUrl) {
-                URL.revokeObjectURL(audioUrl);
-                audioUrl = null;
-            }
-            audioChunks = [];
-            audioPlayer.src = '';
-            setState(AppState.INITIAL);
-        };
-        
-        // --- Player Logic ---
-        const setupPlayer = () => {
-            audioPlayer.addEventListener('loadedmetadata', () => {
-                durationDisplay.textContent = formatTime(audioPlayer.duration);
-                progressBar.max = audioPlayer.duration;
-            });
-            audioPlayer.addEventListener('timeupdate', () => {
-                progressBar.value = audioPlayer.currentTime;
-                currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
-            });
-            audioPlayer.addEventListener('ended', () => {
+        // Gestione Player
+        const togglePlayPause = () => {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            } else {
+                audioPlayer.pause();
                 playIcon.classList.remove('hidden');
                 pauseIcon.classList.add('hidden');
-                progressBar.value = 0;
-                currentTimeDisplay.textContent = "00:00";
-            });
-            playPauseButton.addEventListener('click', () => {
-                if (audioPlayer.paused) {
-                    audioPlayer.play();
-                    playIcon.classList.add('hidden');
-                    pauseIcon.classList.remove('hidden');
-                } else {
-                    audioPlayer.pause();
-                    playIcon.classList.remove('hidden');
-                    pauseIcon.classList.add('hidden');
-                }
-            });
-            progressBar.addEventListener('input', () => {
-                audioPlayer.currentTime = progressBar.value;
-            });
+            }
         };
 
-        // --- Event Listeners ---
-        startButton.addEventListener('click', startRecording);
-        stopButton.addEventListener('click', stopRecording);
+        const updateProgressBar = () => {
+            const percentage = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressBar.value = percentage;
+        };
+
+        const seek = (e) => {
+            const time = (e.target.value / 100) * audioPlayer.duration;
+            audioPlayer.currentTime = time;
+        };
+
+        audioPlayer.addEventListener('timeupdate', updateProgressBar);
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            const minutes = Math.floor(audioPlayer.duration / 60).toString().padStart(2, '0');
+            const seconds = Math.floor(audioPlayer.duration % 60).toString().padStart(2, '0');
+            durationEl.textContent = `${minutes}:${seconds}`;
+            progressBar.value = 0;
+        });
+        audioPlayer.addEventListener('ended', () => {
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+            progressBar.value = 0;
+            audioPlayer.currentTime = 0;
+        });
+
+        // Reset
+        const resetApp = () => {
+            stopTimer();
+            if (mp3Url) {
+                URL.revokeObjectURL(mp3Url);
+                mp3Url = null;
+            }
+            audioPlayer.src = '';
+            audioChunks = [];
+            progressBar.value = 0;
+            durationEl.textContent = '00:00';
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+            updateUI(STATES.IDLE);
+        };
+
+
+        // Event Listeners
+        recordButton.addEventListener('click', () => {
+            if (currentState === STATES.IDLE) {
+                startRecording();
+            } else if (currentState === STATES.RECORDING) {
+                stopRecording();
+            }
+        });
+
+        playPauseButton.addEventListener('click', togglePlayPause);
+        progressBar.addEventListener('input', seek);
         newRecordingButton.addEventListener('click', resetApp);
         
-        setupPlayer();
-        setState(AppState.INITIAL);
-    });
-</script>
-<script type="module" src="/index.tsx"></script>
+        // Inizializzazione
+        updateUI(STATES.IDLE);
+
+    </script>
 </body>
 </html>
